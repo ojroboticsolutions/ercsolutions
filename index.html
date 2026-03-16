@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERC Robotic Solutions — Precision 3D Printing</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#06101e;--s1:#0b1a2e;--s2:#0f2040;--accent:#00e5ff;--adim:rgba(0,229,255,0.15);
+  --green:#00ff88;--text:#ddeeff;--muted:#6a8db5;
+  --border:rgba(0,229,255,0.22);--glow:0 0 28px rgba(0,229,255,0.35);
+  --fh:'Orbitron',monospace;--fm:'Share Tech Mono',monospace;--fb:'Exo 2',sans-serif;
+}
+body{background:linear-gradient(160deg,#06101e 0%,#081628 30%,#0a1e3a 60%,#071428 100%);background-attachment:fixed;color:var(--text);font-family:var(--fb);line-height:1.65;overflow-x:hidden;font-size:1.05rem}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;height:68px;display:flex;align-items:center;justify-content:space-between;padding:0 5%;background:rgba(6,16,30,0.85);backdrop-filter:blur(18px);border-bottom:1px solid var(--border)}
+.nav-logo{font-family:var(--fh);font-size:1.05rem;font-weight:700;color:var(--accent);text-shadow:var(--glow);letter-spacing:2.5px;text-decoration:none}
+.nav-logo em{color:#fff;font-style:normal}
+.nav-links{display:flex;gap:2rem;list-style:none}
+.nav-links a{color:var(--muted);text-decoration:none;font-family:var(--fm);font-size:.78rem;letter-spacing:1.5px;text-transform:uppercase;transition:color .3s;position:relative}
+.nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:1px;background:var(--accent);transition:width .3s}
+.nav-links a:hover{color:var(--accent)}.nav-links a:hover::after{width:100%}
+.nav-cta{padding:.45rem 1.1rem;background:var(--accent);color:#000;font-family:var(--fh);font-size:.65rem;letter-spacing:1.5px;text-transform:uppercase;text-decoration:none;font-weight:700;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));transition:all .3s}
+.nav-cta:hover{background:#fff;box-shadow:var(--glow)}
+
+/* HERO */
+#hero{position:relative;min-height:100vh;display:flex;align-items:center;padding:100px 5% 60px;overflow:hidden}
+#hero-canvas{position:absolute;inset:0;z-index:0}
+.hero-content{position:relative;z-index:1;max-width:720px}
+.hero-tag{font-family:var(--fm);font-size:.8rem;color:var(--accent);letter-spacing:5px;text-transform:uppercase;margin-bottom:1.8rem;opacity:0;animation:fadeUp .8s .2s forwards}
+.hero-tag::before{content:'[ '}.hero-tag::after{content:' ]'}
+h1.ht{font-family:var(--fh);font-size:clamp(2.6rem,5.8vw,5.5rem);font-weight:900;line-height:1.0;color:#fff;margin-bottom:1.6rem;opacity:0;animation:fadeUp .8s .4s forwards}
+h1.ht .ac{color:var(--accent);text-shadow:var(--glow)}
+.hero-sub{font-size:1.15rem;color:#9ab8d8;max-width:520px;font-weight:300;margin-bottom:2.8rem;opacity:0;animation:fadeUp .8s .6s forwards;line-height:1.8}
+.hero-btns{display:flex;gap:1rem;flex-wrap:wrap;opacity:0;animation:fadeUp .8s .8s forwards}
+.hero-stats{display:flex;gap:3rem;margin-top:4rem;opacity:0;animation:fadeUp .8s 1.0s forwards}
+.stat-num{font-family:var(--fh);font-size:2rem;font-weight:700;color:var(--accent);text-shadow:var(--glow)}
+.stat-label{font-family:var(--fm);font-size:.72rem;color:#7a9fc0;letter-spacing:2px;text-transform:uppercase;margin-top:.2rem}
+
+/* BUTTONS */
+.btn-p{display:inline-block;padding:.85rem 2rem;background:var(--accent);color:#000;font-family:var(--fh);font-size:.7rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border:none;cursor:pointer;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px));transition:all .3s}
+.btn-p:hover{background:#fff;box-shadow:0 0 40px rgba(0,229,255,.45);transform:translateY(-2px)}
+.btn-o{display:inline-block;padding:.85rem 2rem;background:transparent;color:var(--accent);font-family:var(--fh);font-size:.7rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border:1px solid var(--accent);cursor:pointer;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px));transition:all .3s}
+.btn-o:hover{background:var(--adim);box-shadow:var(--glow)}
+
+/* SECTIONS */
+section{padding:100px 5%}
+.stag{font-family:var(--fm);font-size:.72rem;letter-spacing:5px;color:var(--accent);text-transform:uppercase;margin-bottom:1rem}
+.stitle{font-family:var(--fh);font-size:clamp(1.9rem,3.8vw,3rem);font-weight:700;color:#fff;margin-bottom:.9rem}
+.ssub{color:#8ab0cc;max-width:560px;font-weight:300;margin-bottom:3.5rem;line-height:1.8;font-size:1.05rem}
+
+/* PRICING TABLE in services */
+.pricing-note{display:inline-flex;gap:.5rem;align-items:center;background:rgba(255,70,70,.1);border:1px solid rgba(255,100,100,.3);border-radius:3px;padding:.5rem .9rem;font-family:var(--fm);font-size:.68rem;color:#ff8888;margin-bottom:2rem}
+
+/* QUOTE */
+#quote{background:rgba(10,22,42,0.7);border-top:1px solid var(--border);border-bottom:1px solid var(--border);backdrop-filter:blur(4px)}
+.upload-zone{border:2px dashed rgba(0,229,255,0.3);border-radius:3px;padding:2.5rem 2rem;text-align:center;cursor:pointer;transition:all .3s;background:rgba(0,229,255,.04)}
+.upload-zone:hover{border-color:rgba(0,229,255,.6);background:rgba(0,229,255,.07)}
+.upload-zone.drag-over{border-color:var(--accent);background:rgba(0,229,255,.09);box-shadow:inset 0 0 40px rgba(0,229,255,.1)}
+.upload-icon{font-size:2.4rem;margin-bottom:.8rem;pointer-events:none}
+.upload-zone h3{font-family:var(--fh);font-size:.9rem;color:var(--accent);margin-bottom:.4rem;letter-spacing:1px;pointer-events:none}
+.upload-zone p{font-family:var(--fm);font-size:.75rem;color:#7a9fc0;pointer-events:none}
+
+/* MULTI-FILE LAYOUT */
+.mq-layout{display:grid;grid-template-columns:380px 1fr;gap:2rem;align-items:start;margin-top:2rem}
+.mq-left{display:flex;flex-direction:column;gap:1rem}
+.mq-right{display:flex;flex-direction:column;gap:1.2rem}
+.items-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem}
+
+/* ITEM CARDS */
+.item-card{background:rgba(15,32,64,0.85);border:1px solid var(--border);border-radius:3px;overflow:hidden;transition:border-color .3s,box-shadow .3s;cursor:pointer}
+.item-card.active{border-color:var(--accent);box-shadow:0 0 20px rgba(0,229,255,.15)}
+.ic-header{display:flex;align-items:center;gap:.7rem;padding:.8rem 1rem;border-bottom:1px solid var(--border)}
+.ic-num{font-family:var(--fm);font-size:.68rem;color:rgba(0,229,255,.6);min-width:20px}
+.ic-name{font-family:var(--fm);font-size:.8rem;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ic-cost{font-family:var(--fh);font-size:.92rem;font-weight:700;color:var(--accent)}
+.ic-remove{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.85rem;padding:0 .2rem;transition:color .2s;line-height:1}
+.ic-remove:hover{color:#ff4466}
+.ic-body{padding:.9rem 1rem;display:none}
+.item-card.active .ic-body{display:block}
+.ic-meta{display:grid;grid-template-columns:auto 1fr;gap:.22rem .7rem;font-family:var(--fm);font-size:.72rem;margin-bottom:.9rem}
+.ic-meta .mk{color:#6a8db5}.ic-meta .mv{color:var(--text)}
+
+/* SETTINGS */
+.settings-panel{display:flex;flex-direction:column;gap:.85rem}
+.srow{display:flex;flex-direction:column;gap:.3rem}
+.slabel{font-family:var(--fm);font-size:.67rem;color:#7090b8;text-transform:uppercase;letter-spacing:2px}
+.sselect{background:rgba(6,16,30,0.8);border:1px solid var(--border);color:var(--text);padding:.5rem .75rem;font-family:var(--fm);font-size:.82rem;border-radius:2px;appearance:none;cursor:pointer;transition:border-color .3s;width:100%}
+.sselect:focus{outline:none;border-color:var(--accent)}
+.slider-row{display:flex;align-items:center;gap:.8rem}
+input[type=range]{flex:1;appearance:none;height:3px;background:var(--s1);border-radius:2px;outline:none}
+input[type=range]::-webkit-slider-thumb{appearance:none;width:13px;height:13px;background:var(--accent);border-radius:50%;cursor:pointer;box-shadow:0 0 8px rgba(0,229,255,.5)}
+.sval{font-family:var(--fm);font-size:.72rem;color:var(--accent);min-width:30px;text-align:right}
+
+/* COLOR SWATCHES */
+.color-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(28px,1fr));gap:5px;margin-top:.3rem}
+.cswatch{width:28px;height:28px;border-radius:3px;cursor:pointer;border:2px solid transparent;transition:all .2s;position:relative;flex-shrink:0}
+.cswatch:hover{transform:scale(1.18);z-index:2}
+.cswatch.selected{border-color:#fff;box-shadow:0 0 0 2px var(--accent),0 0 12px rgba(0,229,255,.4)}
+.color-selected-label{font-family:var(--fm);font-size:.7rem;color:var(--text);margin-top:.45rem;display:flex;align-items:center;gap:.5rem}
+.color-extra{color:var(--green);font-size:.65rem}
+
+/* VIEWER */
+#vcw{width:100%;aspect-ratio:16/10;background:#1a1a1a;border:1px solid var(--border);border-radius:3px;position:relative;overflow:hidden}
+#vcw canvas{display:block}
+.vph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.8rem;pointer-events:none}
+.vph-icon{font-size:3rem;opacity:.3}
+.vph-text{font-family:var(--fm);font-size:.72rem;color:var(--muted)}
+.vph-hint{font-family:var(--fm);font-size:.6rem;color:rgba(0,229,255,.3)}
+.viewer-controls{display:flex;gap:.5rem;align-items:center;position:absolute;top:.7rem;right:.7rem}
+.vc-label{font-family:var(--fm);font-size:.62rem;color:rgba(0,229,255,.6);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:.3rem .5rem;background:rgba(0,0,20,.6);border-radius:2px}
+.vc-btn{background:rgba(0,0,30,.7);border:1px solid var(--border);color:var(--muted);padding:.3rem .6rem;font-family:var(--fm);font-size:.6rem;cursor:pointer;border-radius:2px;transition:all .3s}
+.vc-btn:hover{color:var(--accent);border-color:var(--accent)}
+
+/* COST PANEL */
+.cost-panel{background:rgba(15,32,64,0.85);border:1px solid var(--border);border-radius:3px;padding:1.2rem}
+.cost-head{font-family:var(--fh);font-size:.68rem;letter-spacing:3px;color:#7090b8;text-transform:uppercase;margin-bottom:1rem}
+.cost-rows{display:flex;flex-direction:column;gap:.3rem;margin-bottom:1rem}
+.cr{display:flex;justify-content:space-between;align-items:center;font-family:var(--fm);font-size:.8rem;padding:.3rem 0;border-bottom:1px solid rgba(0,229,255,.08)}
+.cr .lbl{color:#7a9fc0}.cr .v{color:var(--text)}
+.cost-total{display:flex;justify-content:space-between;align-items:center;padding:.65rem .9rem;background:rgba(0,229,255,.07);border:1px solid var(--border);border-radius:2px}
+.ct-lbl{font-family:var(--fh);font-size:.65rem;letter-spacing:1px;color:var(--accent)}
+.ct-val{font-family:var(--fh);font-size:1.4rem;font-weight:700;color:var(--accent);text-shadow:var(--glow)}
+.cost-note{font-family:var(--fm);font-size:.6rem;color:var(--muted);text-align:center;margin-top:.8rem;line-height:1.6}
+
+/* GRAND PANEL */
+.grand-panel{margin-top:2.5rem;background:rgba(15,32,64,0.85);border:1px solid var(--border);border-radius:3px;padding:1.6rem}
+.grand-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem}
+.grand-count{font-family:var(--fm);font-size:.72rem;color:#7a9fc0}
+.grand-table-wrap{overflow-x:auto;margin-bottom:1.4rem}
+.grand-table{width:100%;border-collapse:collapse;font-family:var(--fm);font-size:.78rem}
+.grand-table th{color:#7a9fc0;text-transform:uppercase;letter-spacing:1.5px;font-size:.65rem;padding:.5rem .7rem;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap}
+.grand-table td{padding:.55rem .7rem;border-bottom:1px solid rgba(0,229,255,.07);color:var(--text);vertical-align:middle}
+.grand-table td:last-child{color:var(--accent);font-weight:bold;text-align:right}
+.grand-table td:first-child{color:rgba(0,229,255,.55)}
+.grand-table tr:hover td{background:rgba(0,229,255,.05)}
+.gt-fname{max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.grand-total-row{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;padding-top:1rem;border-top:1px solid var(--border)}
+.grand-subtotals{display:flex;flex-direction:column;gap:.4rem}
+.gst{display:flex;gap:2rem;justify-content:space-between;font-family:var(--fm);font-size:.72rem}
+.gst span:first-child{color:var(--muted)}.gst span:last-child{color:var(--text)}
+.grand-final{display:flex;align-items:center;gap:1.2rem;background:rgba(0,229,255,.07);border:1px solid var(--border);border-radius:3px;padding:.8rem 1.4rem}
+.gf-lbl{font-family:var(--fh);font-size:.7rem;letter-spacing:2px;color:var(--accent)}
+.gf-val{font-family:var(--fh);font-size:2rem;font-weight:900;color:var(--accent);text-shadow:0 0 30px rgba(0,229,255,.4)}
+.grand-actions{display:flex;gap:1rem;flex-wrap:wrap;margin-top:1.4rem}
+
+/* SERVICES */
+#services{background:transparent}
+.svc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.4rem}
+.svc-card{background:rgba(11,26,46,0.82);border:1px solid var(--border);border-radius:3px;padding:2rem;position:relative;overflow:hidden;transition:all .4s;opacity:0;transform:translateY(28px)}
+.svc-card.visible{opacity:1;transform:translateY(0)}
+.svc-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);transform:scaleX(0);transition:transform .4s}
+.svc-card:hover::before{transform:scaleX(1)}
+.svc-card:hover{border-color:rgba(0,229,255,.3);box-shadow:var(--glow);transform:translateY(-5px)!important}
+.svc-num{position:absolute;top:1.4rem;right:1.4rem;font-family:var(--fm);font-size:.68rem;color:rgba(0,229,255,.28);letter-spacing:1px}
+.svc-icon{font-size:2.4rem;margin-bottom:1.2rem;display:block}
+.svc-card h3{font-family:var(--fh);font-size:.88rem;font-weight:600;color:#fff;letter-spacing:1px;margin-bottom:.7rem}
+.svc-card p{font-size:.95rem;color:#8ab0cc;font-weight:300;line-height:1.75}
+.svc-mats{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:1.2rem}
+.mat-tag{font-family:var(--fm);font-size:.65rem;padding:.22rem .55rem;border:1px solid rgba(0,229,255,.28);color:#7ab8d0;border-radius:1px;letter-spacing:1px}
+
+/* PRICING TABLE */
+.price-table-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;margin-top:3rem}
+.price-card{background:rgba(11,26,46,0.82);border:1px solid var(--border);border-radius:3px;padding:1.6rem;opacity:0;transform:translateY(20px);transition:all .4s}
+.price-card.visible{opacity:1;transform:translateY(0)}
+.price-card h3{font-family:var(--fh);font-size:.85rem;color:var(--accent);letter-spacing:2px;margin-bottom:1.2rem}
+.price-row{display:flex;justify-content:space-between;align-items:center;font-family:var(--fm);font-size:.78rem;padding:.45rem 0;border-bottom:1px solid rgba(0,229,255,.07)}
+.price-row:last-child{border-bottom:none}
+.price-row .pr-range{color:var(--muted)}
+.price-row .pr-val{color:var(--accent);font-weight:bold}
+.price-note-box{margin-top:1.4rem;padding:.9rem 1.2rem;background:rgba(255,70,70,.08);border:1px solid rgba(255,100,100,.25);border-radius:3px;font-family:var(--fm);font-size:.7rem;color:#ffaaaa;line-height:1.7}
+.price-note-box strong{color:#ff8888}
+
+/* GALLERY */
+#gallery{background:rgba(8,18,35,0.6);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.gal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.85rem}
+.gal-item{aspect-ratio:1;border:1px solid var(--border);border-radius:3px;overflow:hidden;position:relative;cursor:pointer;opacity:0;transform:scale(.94)}
+.gal-item.visible{opacity:1;transform:scale(1);transition:opacity .5s,transform .5s,border-color .3s}
+.gal-item:hover{border-color:rgba(0,229,255,.4)}
+.gal-item:hover .gal-ov{opacity:1}
+.gal-item:hover .gal-vis{transform:scale(1.06)}
+.gal-vis{width:100%;height:100%;transition:transform .4s;display:flex;align-items:center;justify-content:center}
+.gal-ov{position:absolute;inset:0;background:rgba(0,0,20,.75);opacity:0;transition:opacity .3s;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.4rem}
+.gal-ov h4{font-family:var(--fh);font-size:.78rem;color:var(--accent);letter-spacing:1px;text-align:center;padding:0 .5rem}
+.gal-ov p{font-family:var(--fm);font-size:.68rem;color:#9ab8cc}
+
+/* CONTACT */
+#contact{background:transparent}
+.con-grid{display:grid;grid-template-columns:1fr 1.6fr;gap:4rem;align-items:start}
+.con-info{display:flex;flex-direction:column;gap:1.6rem}
+.ci{display:flex;gap:1rem;align-items:flex-start}
+.ci-icon{font-size:1.1rem;min-width:30px;margin-top:3px;filter:drop-shadow(0 0 6px rgba(0,229,255,.4))}
+.ci-body h4{font-family:var(--fm);font-size:.7rem;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin-bottom:.25rem}
+.ci-body p{font-size:.95rem;color:var(--text)}
+form{display:flex;flex-direction:column;gap:1.1rem}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.ff{display:flex;flex-direction:column;gap:.35rem}
+.ff label{font-family:var(--fm);font-size:.68rem;color:#7090b8;text-transform:uppercase;letter-spacing:2px}
+.ff input,.ff select,.ff textarea{background:rgba(11,26,46,0.85);border:1px solid var(--border);color:var(--text);padding:.68rem .9rem;font-family:var(--fb);font-size:.95rem;border-radius:2px;outline:none;transition:border-color .3s,box-shadow .3s;resize:vertical;width:100%}
+.ff input:focus,.ff select:focus,.ff textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,229,255,.1)}
+.ff textarea{min-height:115px}
+
+/* FOOTER */
+footer{background:rgba(8,18,35,0.9);border-top:1px solid var(--border);padding:1.8rem 5%;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem}
+.ft-logo{font-family:var(--fh);font-size:.9rem;color:var(--accent);text-shadow:var(--glow);letter-spacing:2px}
+.ft-links{display:flex;gap:1.5rem;list-style:none}
+.ft-links a{color:#7a9fc0;text-decoration:none;font-family:var(--fm);font-size:.7rem;transition:color .3s;letter-spacing:1px}
+.ft-links a:hover{color:var(--accent)}
+.ft-copy{font-family:var(--fm);font-size:.65rem;color:#6080a0}
+
+/* TOAST */
+.toast{position:fixed;bottom:2rem;right:2rem;background:var(--s2);border:1px solid var(--accent);color:var(--text);padding:.9rem 1.5rem;font-family:var(--fm);font-size:.8rem;border-radius:3px;box-shadow:var(--glow);z-index:999;transform:translateY(20px);opacity:0;transition:all .4s;pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* ADMIN BUTTON — bottom LEFT */
+.admin-toggle{position:fixed;bottom:1.8rem;left:1.8rem;right:auto;z-index:500;background:rgba(0,10,30,0.9);border:1px solid var(--border);color:var(--accent);padding:.55rem 1rem;font-family:var(--fm);font-size:.65rem;letter-spacing:1px;cursor:pointer;border-radius:3px;transition:all .3s}
+.admin-toggle:hover{background:rgba(0,229,255,.15);border-color:var(--accent)}
+
+/* ADMIN OVERLAY */
+.admin-overlay{position:fixed;inset:0;z-index:600;background:rgba(3,8,18,.85);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:1rem}
+.admin-overlay.open{display:flex}
+.admin-panel{background:#0b1a2e;border:1px solid var(--border);border-radius:6px;padding:2rem;width:min(700px,100%);max-height:88vh;overflow-y:auto;position:relative}
+.admin-panel h2{font-family:var(--fh);font-size:.9rem;color:var(--accent);letter-spacing:2px;margin-bottom:.35rem}
+.admin-sub{font-family:var(--fm);font-size:.68rem;color:var(--muted);margin-bottom:1.6rem}
+.admin-close{position:absolute;top:1.2rem;right:1.2rem;background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1;transition:color .2s}
+.admin-close:hover{color:#fff}
+.admin-color-list{display:flex;flex-direction:column;gap:.55rem;margin-bottom:1.5rem}
+.admin-color-row{display:grid;grid-template-columns:32px 1fr 100px 88px auto;gap:.6rem;align-items:center;background:rgba(0,229,255,.04);border:1px solid var(--border);border-radius:3px;padding:.55rem .8rem}
+.admin-swatch-wrap{width:30px;height:30px;border-radius:3px;border:1px solid rgba(255,255,255,.2);position:relative;overflow:hidden;cursor:pointer}
+.admin-swatch-wrap input[type=color]{position:absolute;inset:-6px;width:calc(100% + 12px);height:calc(100% + 12px);opacity:0;cursor:pointer;border:none;padding:0}
+.admin-input{font-family:var(--fm);font-size:.75rem;background:rgba(6,16,30,0.85);border:1px solid var(--border);color:var(--text);padding:.38rem .6rem;border-radius:2px;outline:none;width:100%}
+.admin-input:focus{border-color:var(--accent)}
+.admin-avail{display:flex;align-items:center;gap:.4rem;font-family:var(--fm);font-size:.68rem;color:var(--muted);cursor:pointer;user-select:none}
+.admin-avail input[type=checkbox]{accent-color:var(--accent);width:14px;height:14px;cursor:pointer}
+.admin-del{background:none;border:none;color:#ff6680;cursor:pointer;font-size:.9rem;padding:0 .2rem;line-height:1;transition:opacity .2s}
+.admin-del:hover{opacity:.6}
+.admin-add-section{border-top:1px solid var(--border);padding-top:1.2rem;margin-bottom:1.4rem}
+.admin-add-title{font-family:var(--fm);font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:.8rem}
+.admin-add-row{display:flex;gap:.7rem;align-items:center;flex-wrap:wrap}
+.admin-add-row .admin-input{flex:1;min-width:110px}
+#newColorHex{width:44px;height:34px;padding:2px 3px;cursor:pointer;border-radius:3px;border:1px solid var(--border);background:rgba(6,16,30,0.8)}
+.admin-save-btn{background:var(--accent);color:#000;font-family:var(--fh);font-size:.65rem;font-weight:700;letter-spacing:1.5px;border:none;padding:.55rem 1.3rem;cursor:pointer;border-radius:2px;transition:all .3s;text-transform:uppercase}
+.admin-save-btn:hover{background:#fff;box-shadow:var(--glow)}
+.admin-footer{display:flex;justify-content:flex-end;gap:.8rem;border-top:1px solid var(--border);padding-top:1.2rem}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:1000px){.mq-layout{grid-template-columns:1fr}.price-table-grid{grid-template-columns:1fr}}
+@media(max-width:900px){.con-grid{grid-template-columns:1fr}.frow{grid-template-columns:1fr}.nav-links{display:none}.hero-stats{gap:1.5rem}.grand-total-row{flex-direction:column;align-items:stretch}.grand-final{justify-content:space-between}}
+@media(max-width:500px){.hero-stats{flex-wrap:wrap}.grand-actions{flex-direction:column}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="#hero" class="nav-logo">ERC<em> Robotic Solutions</em></a>
+  <ul class="nav-links">
+    <li><a href="#services">Services</a></li>
+    <li><a href="#quote">Quote</a></li>
+    <li><a href="#gallery">Gallery</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <a href="#quote" class="nav-cta">Get Quote</a>
+</nav>
+
+<section id="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-content">
+    <p class="hero-tag">Chennai · ERC Robotic Solutions · est. 2024</p>
+    <h1 class="ht">PRECISION<br><span class="ac">3D PRINTING</span><br>SOLUTIONS</h1>
+    <p class="hero-sub">From rapid prototypes to production-grade industrial parts — we turn your digital designs into physical reality with micron-level accuracy.</p>
+    <div class="hero-btns">
+      <a href="#quote" class="btn-p">Upload & Get Instant Quote</a>
+      <a href="#services" class="btn-o">Explore Services</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-item"><div class="stat-num">0.1mm</div><div class="stat-label">Min Layer Height</div></div>
+      <div class="stat-item"><div class="stat-num">24hr</div><div class="stat-label">Express Turnaround</div></div>
+      <div class="stat-item"><div class="stat-num">PLA ₹3/g</div><div class="stat-label">Starting Price</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="quote">
+  <p class="stag">// instant quote engine</p>
+  <h2 class="stitle">Upload & Get Your Quote</h2>
+  <p class="ssub">Upload multiple STL files — each gets its own settings, 3D preview, and cost breakdown, plus a combined order total.</p>
+
+  <div class="upload-zone" id="uploadZone">
+    <div class="upload-icon">📤</div>
+    <h3>Drop Your STL Files Here</h3>
+    <p>Click to browse or drag & drop · Multiple files supported · .STL only · Max 50MB each</p>
+  </div>
+  <input type="file" id="fileInput" accept=".stl" multiple style="display:none">
+
+  <div id="itemsList" style="display:none;margin-top:2rem">
+    <div class="mq-layout">
+      <div class="mq-left">
+        <div class="items-header">
+          <span class="stag" style="margin:0">// your files</span>
+          <button class="vc-btn" id="clearAllBtn">✕ Clear All</button>
+        </div>
+        <div id="itemCards"></div>
+      </div>
+      <div class="mq-right">
+        <div id="vcw">
+          <div class="vph" id="vph">
+            <span class="vph-icon">🧊</span>
+            <span class="vph-text">Select a file to preview</span>
+            <span class="vph-hint">Drag to rotate · Scroll to zoom</span>
+          </div>
+          <div class="viewer-controls" id="vctrls" style="display:none">
+            <span class="vc-label" id="vcLabel"></span>
+            <button class="vc-btn" id="resetBtn">⟳ Reset</button>
+            <button class="vc-btn" id="wireBtn">⬡ Wire</button>
+          </div>
+        </div>
+        <div class="cost-panel">
+          <div class="cost-head">// Selected Item Breakdown</div>
+          <div id="selCostEmpty" style="font-family:var(--fm);font-size:.72rem;color:var(--muted);padding:.5rem 0">Select an item to see its breakdown</div>
+          <div id="selCostRows" style="display:none">
+            <div class="cost-rows">
+              <div class="cr"><span class="lbl">Material cost</span><span class="v" id="sc-mat">—</span></div>
+              <div class="cr"><span class="lbl">Print time</span><span class="v" id="sc-time">—</span></div>
+              <div class="cr"><span class="lbl">Labor & setup</span><span class="v" id="sc-labor">—</span></div>
+              <div class="cr"><span class="lbl">Supports</span><span class="v" id="sc-supp">—</span></div>
+              <div class="cr"><span class="lbl">Layer surcharge</span><span class="v" id="sc-layer">—</span></div>
+              <div class="cr"><span class="lbl">Color / finish</span><span class="v" id="sc-color">—</span></div>
+              <div class="cr"><span class="lbl">Quantity × unit cost</span><span class="v" id="sc-qty">—</span></div>
+            </div>
+            <div class="cost-total">
+              <span class="ct-lbl">ITEM TOTAL</span>
+              <span class="ct-val" id="sc-total">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="grand-panel">
+      <div class="grand-head">
+        <span class="stag" style="margin:0">// order summary</span>
+        <span class="grand-count" id="grandCount"></span>
+      </div>
+      <div class="grand-table-wrap">
+        <table class="grand-table">
+          <thead><tr><th>#</th><th>File</th><th>Material</th><th>Color</th><th>Layer</th><th>Infill</th><th>Qty</th><th>Weight</th><th>Item Total</th></tr></thead>
+          <tbody id="grandTableBody"></tbody>
+        </table>
+      </div>
+      <div class="grand-total-row">
+        <div class="grand-subtotals">
+          <div class="gst"><span>Subtotal</span><span id="gSubtotal">—</span></div>
+          
+        </div>
+        <div class="grand-final">
+          <span class="gf-lbl">ORDER TOTAL</span>
+          <span class="gf-val" id="gTotal">—</span>
+        </div>
+      </div>
+      <div class="grand-actions">
+        <a href="#contact" class="btn-p">Place Order / Enquire →</a>
+        <button class="btn-o" id="pdfBtn">⬇ Download Quote PDF</button>
+      </div>
+      <p class="cost-note" style="margin-top:1rem">* Prices exclude delivery charges. Final price confirmed after review.</p>
+    </div>
+  </div>
+</section>
+
+<section id="services">
+  <p class="stag">// what we do</p>
+  <h2 class="stitle">Our Services</h2>
+  <p class="ssub">End-to-end 3D printing for every application — from custom keychains to industrial production parts.</p>
+
+  <div class="pricing-note">⚠ Specified filament colour is to be informed before 7 days · Prices exclude delivery charges</div>
+
+  <div class="svc-grid">
+    <div class="svc-card"><span class="svc-num">01</span><span class="svc-icon">⚙️</span><h3>Custom Parts & Prototypes</h3><p>Rapid prototyping of mechanical parts, enclosures, brackets, jigs, and one-off custom designs. Fast turnaround, tight tolerances.</p><div class="svc-mats"><span class="mat-tag">PLA</span><span class="mat-tag">PETG</span><span class="mat-tag">ABS</span><span class="mat-tag">TPU</span></div></div>
+    <div class="svc-card"><span class="svc-num">02</span><span class="svc-icon">🔗</span><h3>Custom Keychains & Toys</h3><p>Custom-designed keychains, figurines, cosplay props, and novelty items with premium detail and your choice of color.</p><div class="svc-mats"><span class="mat-tag">PLA</span><span class="mat-tag">PLA+</span></div></div>
+    <div class="svc-card"><span class="svc-num">03</span><span class="svc-icon">🎓</span><h3>College Project Parts</h3><p>3D printed components for college projects, robotics, and engineering models. Fast delivery for tight submission deadlines.</p><div class="svc-mats"><span class="mat-tag">PLA</span><span class="mat-tag">PETG</span><span class="mat-tag">ABS</span></div></div>
+    <div class="svc-card"><span class="svc-num">04</span><span class="svc-icon">🖥️</span><h3>3D Design Service</h3><p>Don't have a file? We'll design it for you. Send a sketch, reference image, or description and we'll create a print-ready STL.</p><div class="svc-mats"><span class="mat-tag">All Materials</span></div></div>
+  </div>
+
+  <!-- PRICING TABLES -->
+  <h2 class="stitle" style="margin-top:4rem">Best Prices</h2>
+  <p class="ssub">Tiered pricing — the more you print, the less you pay per gram.</p>
+
+  <div class="price-table-grid">
+    <div class="price-card">
+      <h3>PLA — Standard Plastic</h3>
+      <div class="price-row"><span class="pr-range">Less than 10g</span><span class="pr-val">₹10 / gram</span></div>
+      <div class="price-row"><span class="pr-range">10g – 50g</span><span class="pr-val">₹8 / gram</span></div>
+      <div class="price-row"><span class="pr-range">50g – 100g</span><span class="pr-val">₹5 / gram</span></div>
+      <div class="price-row"><span class="pr-range">Above 100g</span><span class="pr-val">₹3 / gram</span></div>
+    </div>
+    <div class="price-card">
+      <h3>PETG — Engineering Grade</h3>
+      <div class="price-row"><span class="pr-range">Less than 10g</span><span class="pr-val">₹12 / gram</span></div>
+      <div class="price-row"><span class="pr-range">10g – 50g</span><span class="pr-val">₹10 / gram</span></div>
+      <div class="price-row"><span class="pr-range">50g – 100g</span><span class="pr-val">₹7 / gram</span></div>
+      <div class="price-row"><span class="pr-range">Above 100g</span><span class="pr-val">₹5 / gram</span></div>
+    </div>
+  </div>
+  <div class="price-note-box" style="margin-top:1.2rem">
+    <strong>⚠ Important:</strong> Specified filament colour must be informed at least <strong>7 days before</strong> the order deadline. · Prices shown are <strong>excluding delivery charges</strong>. · We offer <strong>PLA, PETG, and FDA-compliant materials</strong>. · ABS & TPU pricing available on request — contact us for a quote.
+  </div>
+</section>
+
+<section id="gallery">
+  <p class="stag">// our work</p>
+  <h2 class="stitle">Print Gallery</h2>
+  <p class="ssub">A selection of projects printed for clients across Chennai and beyond.</p>
+  <div class="gal-grid" id="galGrid"></div>
+</section>
+
+<section id="contact">
+  <p class="stag">// get in touch</p>
+  <h2 class="stitle">Contact Us</h2>
+  <p class="ssub">Send us your project requirements and we'll respond within 24 hours with a confirmed quote.</p>
+  <div class="con-grid">
+    <div class="con-info">
+      <div class="ci"><span class="ci-icon">📍</span><div class="ci-body"><h4>Location</h4><p>Chennai, Tamil Nadu, India</p></div></div>
+      <div class="ci"><span class="ci-icon">📞</span><div class="ci-body"><h4>Phone</h4><p>8438079969 · 814302725 · 8056160643</p></div></div>
+      <div class="ci"><span class="ci-icon">📧</span><div class="ci-body"><h4>Email</h4><p>erc3dprintingservices@gmail.com</p></div></div>
+      <div class="ci"><span class="ci-icon">⏱️</span><div class="ci-body"><h4>Turnaround Time</h4><p>Standard: 2–3 days · Express: 24 hrs</p></div></div>
+      <div class="ci"><span class="ci-icon">🖨️</span><div class="ci-body"><h4>Machines</h4><p>Bambu Lab A1 Combo · Anycubic Kobra S1 · Anycubic Base</p></div></div>
+      <div class="ci"><span class="ci-icon">📦</span><div class="ci-body"><h4>Shipping</h4><p>Local pickup or courier via Shiprocket</p></div></div>
+    </div>
+    <form id="contactForm" action="https://formspree.io/f/mwvrrral" method="POST">
+    <div class="frow">
+      <div class="ff">
+        <label>Your Name</label>
+        <input type="text" name="name" placeholder="John Doe" required>
+      </div>
+      <div class="ff">
+        <label>Email</label>
+        <input type="email" name="email" placeholder="you@email.com" required>
+      </div>
+    </div>
+    <div class="frow">
+      <div class="ff">
+        <label>Phone</label>
+        <input type="tel" name="phone" placeholder="+91 XXXXX XXXXX">
+      </div>
+      <div class="ff">
+        <label>Service</label>
+        <select name="service">
+          <option>Custom Parts / Prototypes</option>
+          <option>Custom Keychains & Toys</option>
+          <option>College Project Parts</option>
+          <option>3D Design Service</option>
+          <option>Other / Not Sure</option>
+        </select>
+      </div>
+    </div>
+    <div class="ff">
+      <label>Message / Requirements</label>
+      <textarea name="message" placeholder="Describe your project — material preference, quantity, deadline, any special
+  requirements..."></textarea>
+    </div>
+    <button type="submit" class="btn-p">Send Message →</button>
+  </form>
+  </div>
+</section>
+
+<footer>
+  <div class="ft-logo">ERC Robotic Solutions</div>
+  <ul class="ft-links"><li><a href="#services">Services</a></li><li><a href="#quote">Quote</a></li><li><a href="#gallery">Gallery</a></li><li><a href="#contact">Contact</a></li></ul>
+  <p class="ft-copy">© 2025 ERC Robotic Solutions · 3D Printing · Chennai, India</p>
+</footer>
+
+<button class="admin-toggle" id="adminToggle">🎨 Manage Colors</button>
+
+<div class="admin-overlay" id="adminOverlay">
+  <div class="admin-panel">
+    <button class="admin-close" id="adminClose">✕</button>
+    <h2>// Color Management</h2>
+    <p class="admin-sub">Edit colors, toggle availability, set extra charges. Changes apply immediately and save automatically.</p>
+    <div class="admin-color-list" id="adminColorList"></div>
+    <div class="admin-add-section">
+      <div class="admin-add-title">Add New Color</div>
+      <div class="admin-add-row">
+        <input type="color" id="newColorHex" value="#ff0000">
+        <input type="text" id="newColorName" class="admin-input" placeholder="Color name" style="flex:1">
+        <input type="number" id="newColorPrice" class="admin-input" placeholder="Extra ₹" style="width:100px" min="0" value="0">
+        <button class="admin-save-btn" id="addColorBtn">+ Add</button>
+      </div>
+    </div>
+    <div class="admin-footer">
+      <button class="admin-save-btn" id="saveColorsBtn">✓ Save & Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════
+//  HERO
+// ═══════════════════
+const hc=document.getElementById('hero-canvas'),hx=hc.getContext('2d');
+let HW,HH,dots=[];
+function initHero(){HW=hc.width=hc.offsetWidth;HH=hc.height=hc.offsetHeight;dots=[];const gx=Math.ceil(HW/38),gy=Math.ceil(HH/38);for(let r=0;r<=gy;r++)for(let c=0;c<=gx;c++)dots.push({x:c*38,y:r*38,sz:Math.random()*1.3+.4,ph:Math.random()*Math.PI*2,sp:Math.random()*.015+.004});}
+function drawHero(t){hx.clearRect(0,0,HW,HH);const g=hx.createRadialGradient(HW*.28,HH*.5,0,HW*.28,HH*.5,HW*.9);g.addColorStop(0,'rgba(0,90,160,.6)');g.addColorStop(.45,'rgba(0,50,110,.4)');g.addColorStop(1,'rgba(6,16,30,0)');hx.fillStyle=g;hx.fillRect(0,0,HW,HH);const g2=hx.createRadialGradient(HW*.75,HH*.25,0,HW*.75,HH*.25,HW*.5);g2.addColorStop(0,'rgba(0,180,255,.12)');g2.addColorStop(1,'rgba(0,0,0,0)');hx.fillStyle=g2;hx.fillRect(0,0,HW,HH);dots.forEach(d=>{const a=.12+.22*Math.sin(t*d.sp+d.ph);hx.beginPath();hx.arc(d.x,d.y,d.sz,0,Math.PI*2);hx.fillStyle=`rgba(0,229,255,${a})`;hx.fill();});const sy=(t*.04)%(HH+200)-100,sg=hx.createLinearGradient(0,sy-40,0,sy+40);sg.addColorStop(0,'rgba(0,229,255,0)');sg.addColorStop(.5,'rgba(0,229,255,.06)');sg.addColorStop(1,'rgba(0,229,255,0)');hx.fillStyle=sg;hx.fillRect(0,sy-40,HW,80);requestAnimationFrame(drawHero);}
+window.addEventListener('resize',initHero);initHero();requestAnimationFrame(drawHero);
+
+// ═══════════════════
+//  COLOR SYSTEM
+// ═══════════════════
+let COLORS=JSON.parse(localStorage.getItem('erc_colors')||'null')||[
+  {id:1,name:'White',       hex:'#f0f0f0',extra:0, available:true},
+  {id:2,name:'Black',       hex:'#1c1c1c',extra:0, available:true},
+  {id:3,name:'Grey',        hex:'#808080',extra:0, available:true},
+  {id:4,name:'Navy Blue',   hex:'#1e3a6e',extra:0, available:true},
+  {id:5,name:'Sky Blue',    hex:'#4fc3f7',extra:0, available:true},
+  {id:6,name:'Red',         hex:'#e53935',extra:0, available:true},
+  {id:7,name:'Orange',      hex:'#ff6b35',extra:0, available:true},
+  {id:8,name:'Yellow',      hex:'#ffd600',extra:0, available:true},
+  {id:9,name:'Green',       hex:'#43a047',extra:0, available:true},
+  {id:10,name:'Purple',     hex:'#8b5cf6',extra:0, available:true},
+  {id:11,name:'Pink',       hex:'#ec4899',extra:20,available:true},
+  {id:12,name:'Gold',       hex:'#fbbf24',extra:30,available:true},
+  {id:13,name:'Silver',     hex:'#b0bec5',extra:30,available:true},
+  {id:14,name:'Transparent',hex:'#a8d8ea',extra:50,available:true},
+  {id:15,name:'Glow in Dark',hex:'#ccff66',extra:80,available:true},
+];
+let colorIdCounter=Math.max(...COLORS.map(c=>c.id),15);
+function saveColors(){localStorage.setItem('erc_colors',JSON.stringify(COLORS));}
+function hexToInt(h){return parseInt(h.replace('#',''),16);}
+function getAvailableColors(){return COLORS.filter(c=>c.available);}
+
+// Admin
+function renderAdminList(){
+  const el=document.getElementById('adminColorList');el.innerHTML='';
+  COLORS.forEach((col,i)=>{
+    const row=document.createElement('div');row.className='admin-color-row';
+    row.innerHTML=`<div class="admin-swatch-wrap" style="background:${col.hex}"><input type="color" value="${col.hex}" oninput="COLORS[${i}].hex=this.value;this.closest('.admin-swatch-wrap').style.background=this.value;refreshAllSwatches()"></div><input class="admin-input" value="${col.name}" oninput="COLORS[${i}].name=this.value;refreshAllSwatches()" placeholder="Color name"><input class="admin-input" type="number" min="0" value="${col.extra}" oninput="COLORS[${i}].extra=+this.value;refreshAllSwatches()" placeholder="Extra ₹"><label class="admin-avail"><input type="checkbox" ${col.available?'checked':''} onchange="COLORS[${i}].available=this.checked;refreshAllSwatches()"> Available</label><button class="admin-del" onclick="COLORS.splice(${i},1);renderAdminList();refreshAllSwatches()">🗑</button>`;
+    el.appendChild(row);
+  });
+}
+document.getElementById('adminToggle').addEventListener('click',()=>{renderAdminList();document.getElementById('adminOverlay').classList.add('open');});
+document.getElementById('adminClose').addEventListener('click',()=>{saveColors();document.getElementById('adminOverlay').classList.remove('open');});
+document.getElementById('saveColorsBtn').addEventListener('click',()=>{saveColors();document.getElementById('adminOverlay').classList.remove('open');showToast('✓ Colors saved!');});
+document.getElementById('adminOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('adminOverlay')){saveColors();document.getElementById('adminOverlay').classList.remove('open');}});
+document.getElementById('addColorBtn').addEventListener('click',()=>{
+  const hex=document.getElementById('newColorHex').value,name=document.getElementById('newColorName').value.trim()||'Custom',extra=+document.getElementById('newColorPrice').value||0;
+  colorIdCounter++;COLORS.push({id:colorIdCounter,name,hex,extra,available:true});
+  document.getElementById('newColorName').value='';document.getElementById('newColorPrice').value='0';
+  renderAdminList();refreshAllSwatches();showToast(`✓ "${name}" added`);
+});
+
+// Swatch builder
+function buildSwatchHTML(itemId,selectedColorId){
+  const avail=getAvailableColors();
+  const swatches=avail.map(col=>`<div class="cswatch ${col.id===selectedColorId?'selected':''}" style="background:${col.hex}" title="${col.name}${col.extra>0?' (+₹'+col.extra+')':''}" onclick="selectColor(${itemId},${col.id})"></div>`).join('');
+  const sel=COLORS.find(c=>c.id===selectedColorId)||avail[0];
+  return `<div class="color-grid" id="cg-${itemId}">${swatches}</div><div class="color-selected-label" id="cl-${itemId}"><div style="width:13px;height:13px;border-radius:2px;background:${sel?sel.hex:'#fff'};border:1px solid rgba(255,255,255,.2);flex-shrink:0"></div><span>${sel?sel.name:'—'}</span>${sel&&sel.extra>0?`<span class="color-extra">+₹${sel.extra}</span>`:''}</div>`;
+}
+
+function selectColor(itemId,colorId){
+  const item=items.find(i=>i.id===itemId);if(!item)return;
+  const col=COLORS.find(c=>c.id===colorId);
+  item.settings.colorId=colorId;item.settings.colorName=col?col.name:'';item.settings.colorExtra=col?col.extra:0;
+  const grid=document.getElementById(`cg-${itemId}`),label=document.getElementById(`cl-${itemId}`);
+  if(grid){const avail=getAvailableColors();grid.querySelectorAll('.cswatch').forEach((s,i)=>{s.classList.toggle('selected',avail[i]&&avail[i].id===colorId);});}
+  if(label&&col)label.innerHTML=`<div style="width:13px;height:13px;border-radius:2px;background:${col.hex};border:1px solid rgba(255,255,255,.2);flex-shrink:0"></div><span>${col.name}</span>${col.extra>0?`<span class="color-extra">+₹${col.extra}</span>`:''}`;
+  if(activeItemId===itemId&&activeMesh&&col)activeMesh.material.color.setHex(hexToInt(col.hex));
+  item.cost=computeItemCost(item.meshData,item.settings);
+  const root=document.getElementById(`ic-${itemId}`);
+  if(root)root.querySelector('.ic-cost').textContent='₹'+item.cost.total.toFixed(0);
+  if(activeItemId===itemId)updateSelectedBreakdown(item);
+  updateGrandTotal();
+}
+
+function refreshAllSwatches(){
+  items.forEach(item=>{
+    const grid=document.getElementById(`cg-${item.id}`);if(!grid)return;
+    const avail=getAvailableColors();
+    grid.innerHTML=avail.map(col=>`<div class="cswatch ${col.id===item.settings.colorId?'selected':''}" style="background:${col.hex}" title="${col.name}${col.extra>0?' (+₹'+col.extra+')':''}" onclick="selectColor(${item.id},${col.id})"></div>`).join('');
+    const sel=COLORS.find(c=>c.id===item.settings.colorId)||avail[0];
+    const label=document.getElementById(`cl-${item.id}`);
+    if(label&&sel)label.innerHTML=`<div style="width:13px;height:13px;border-radius:2px;background:${sel.hex};border:1px solid rgba(255,255,255,.2);flex-shrink:0"></div><span>${sel.name}</span>${sel.extra>0?`<span class="color-extra">+₹${sel.extra}</span>`:''}`;
+  });
+}
+
+// ═══════════════════
+//  STL PARSER
+// ═══════════════════
+function parseSTL(buf){const view=new DataView(buf),nTris=view.getUint32(80,true);if(nTris>0&&84+nTris*50===buf.byteLength)return parseBin(view,nTris);return parseAsc(new TextDecoder().decode(buf));}
+function parseBin(view,n){const pos=new Float32Array(n*9),nor=new Float32Array(n*9);for(let i=0;i<n;i++){const o=84+i*50,nx=view.getFloat32(o,true),ny=view.getFloat32(o+4,true),nz=view.getFloat32(o+8,true);for(let j=0;j<3;j++){const vo=o+12+j*12,b=i*9+j*3;pos[b]=view.getFloat32(vo,true);pos[b+1]=view.getFloat32(vo+4,true);pos[b+2]=view.getFloat32(vo+8,true);nor[b]=nx;nor[b+1]=ny;nor[b+2]=nz;}}return{pos,nor,n};}
+function parseAsc(text){const verts=[],norms=[];let cn=[0,1,0];for(const line of text.split('\n')){const t=line.trim();if(t.startsWith('facet normal')){const p=t.split(/\s+/);cn=[+p[2],+p[3],+p[4]];}else if(t.startsWith('vertex')){const p=t.split(/\s+/);verts.push(+p[1],+p[2],+p[3]);norms.push(...cn);}}return{pos:new Float32Array(verts),nor:new Float32Array(norms),n:verts.length/9};}
+function analyzeMesh(pos){let vol=0,mnx=1e9,mny=1e9,mnz=1e9,mxx=-1e9,mxy=-1e9,mxz=-1e9;for(let i=0;i<pos.length;i+=9){const ax=pos[i],ay=pos[i+1],az=pos[i+2],bx=pos[i+3],by=pos[i+4],bz=pos[i+5],cx=pos[i+6],cy=pos[i+7],cz=pos[i+8];vol+=ax*(by*cz-bz*cy)+bx*(cy*az-cz*ay)+cx*(ay*bz-az*by);mnx=Math.min(mnx,ax,bx,cx);mny=Math.min(mny,ay,by,cy);mnz=Math.min(mnz,az,bz,cz);mxx=Math.max(mxx,ax,bx,cx);mxy=Math.max(mxy,ay,by,cy);mxz=Math.max(mxz,az,bz,cz);}return{vol:Math.abs(vol)/6/1000,dims:{x:(mxx-mnx).toFixed(1),y:(mxy-mny).toFixed(1),z:(mxz-mnz).toFixed(1)},size:Math.max(mxx-mnx,mxy-mny,mxz-mnz)};}
+
+// ═══════════════════
+//  VIEWER
+// ═══════════════════
+let scene,cam,ren,activeMesh,autoRot=true,wire=false,viewerUp=false;
+let sph={th:.5,ph:.85,r:6},drag=false,pm={x:0,y:0};
+
+function initViewer(){
+  if(viewerUp)return;
+  const wrap=document.getElementById('vcw'),W=wrap.offsetWidth||800,H=wrap.offsetHeight||450;
+  scene=new THREE.Scene();scene.background=new THREE.Color(0x1a1a1a);
+  cam=new THREE.PerspectiveCamera(42,W/H,.001,500);
+  ren=new THREE.WebGLRenderer({antialias:true});ren.setPixelRatio(Math.min(window.devicePixelRatio,2));ren.setSize(W,H);wrap.appendChild(ren.domElement);
+  scene.add(new THREE.AmbientLight(0xffffff,0.7));
+  const d1=new THREE.DirectionalLight(0xffffff,1.2);d1.position.set(5,8,5);scene.add(d1);
+  const d2=new THREE.DirectionalLight(0xdddddd,0.5);d2.position.set(-5,-3,-5);scene.add(d2);
+  const d3=new THREE.DirectionalLight(0xffffff,0.3);d3.position.set(0,-5,0);scene.add(d3);
+  const grid=new THREE.GridHelper(14,22,0x00e5ff,0x0d1535);grid.position.y=-0.1;scene.add(grid);
+  const c=ren.domElement;
+  c.addEventListener('mousedown',e=>{drag=true;autoRot=false;pm={x:e.clientX,y:e.clientY};});
+  c.addEventListener('mouseup',()=>drag=false);c.addEventListener('mouseleave',()=>drag=false);
+  c.addEventListener('mousemove',e=>{if(!drag)return;sph.th-=(e.clientX-pm.x)*.01;sph.ph=Math.max(.1,Math.min(Math.PI-.1,sph.ph-(e.clientY-pm.y)*.01));pm={x:e.clientX,y:e.clientY};updCam();});
+  c.addEventListener('wheel',e=>{sph.r=Math.max(.3,Math.min(30,sph.r+e.deltaY*.008));updCam();e.preventDefault();},{passive:false});
+  viewerUp=true;updCam();renderLoop();
+}
+function updCam(){cam.position.set(sph.r*Math.sin(sph.ph)*Math.sin(sph.th),sph.r*Math.cos(sph.ph),sph.r*Math.sin(sph.ph)*Math.cos(sph.th));cam.lookAt(0,0,0);}
+function renderLoop(){requestAnimationFrame(renderLoop);if(autoRot){sph.th+=.005;updCam();}if(ren)ren.render(scene,cam);}
+
+function loadMeshIntoViewer(item){
+  initViewer();
+  if(activeMesh){scene.remove(activeMesh);activeMesh.geometry.dispose();activeMesh.material.dispose();}
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute('position',new THREE.BufferAttribute(item.parsed.pos,3));
+  geo.setAttribute('normal',new THREE.BufferAttribute(item.parsed.nor,3));
+  geo.computeBoundingBox();
+  const ctr=new THREE.Vector3();geo.boundingBox.getCenter(ctr);geo.translate(-ctr.x,-ctr.y,-ctr.z);
+  // ✅ Use selected color, not default material blue
+  const col=COLORS.find(c=>c.id===item.settings.colorId);
+  const meshColor=col?hexToInt(col.hex):0xf0f0f0;
+  const mat=new THREE.MeshPhongMaterial({color:meshColor,specular:0x222222,shininess:40,side:THREE.DoubleSide,wireframe:wire});
+  activeMesh=new THREE.Mesh(geo,mat);
+  const scale=3.5/(item.meshData.size||1);activeMesh.scale.setScalar(scale);activeMesh.position.y=(+item.meshData.dims.y*scale)/2;
+  scene.add(activeMesh);sph={th:.5,ph:.85,r:6};autoRot=true;updCam();
+  document.getElementById('vph').style.display='none';document.getElementById('vctrls').style.display='flex';document.getElementById('vcLabel').textContent=item.name;
+}
+document.getElementById('resetBtn').addEventListener('click',()=>{sph={th:.5,ph:.85,r:6};autoRot=true;updCam();});
+document.getElementById('wireBtn').addEventListener('click',()=>{wire=!wire;if(activeMesh)activeMesh.material.wireframe=wire;document.getElementById('wireBtn').textContent=wire?'⬛ Solid':'⬡ Wire';});
+window.addEventListener('resize',()=>{if(!ren)return;const w=document.getElementById('vcw');ren.setSize(w.clientWidth,w.clientHeight);cam.aspect=w.clientWidth/w.clientHeight;cam.updateProjectionMatrix();});
+
+// ═══════════════════
+//  TIERED PRICING (from flyer)
+// ═══════════════════
+// Returns price-per-gram based on estimated print weight
+function getPPG(mat, wt){
+  if(mat==='pla'){
+    if(wt<10)  return 10;
+    if(wt<50)  return 8;
+    if(wt<100) return 5;
+    return 3;
+  }
+  if(mat==='petg'){
+    if(wt<10)  return 12;
+    if(wt<50)  return 10;
+    if(wt<100) return 7;
+    return 5;
+  }
+  if(mat==='abs'){
+    if(wt<50)  return 9;
+    if(wt<100) return 7;
+    return 5;
+  }
+  if(mat==='tpu'){
+    if(wt<50)  return 12;
+    return 9;
+  }
+  
+  return 10;
+}
+
+const DENS={pla:1.24,petg:1.27,abs:1.04,tpu:1.21};
+
+function computeItemCost(md,s){
+  const inf=s.infill/100,layer=+s.layer,supp=+s.supp,qty=Math.max(1,+s.qty);
+  const dens=DENS[s.mat]||1.24;
+  const ev=md.vol*(0.22+0.78*inf);     // effective volume cm³
+  const wt=ev*dens;                     // weight in grams (single unit)
+  const ppg=getPPG(s.mat,wt*qty);       // tiered rate based on total order weight
+  const mc=wt*ppg;                      // material cost per unit
+  const lf=layer===0.1?2.4:layer===0.15?1.45:layer===0.3?0.72:1;
+  const th=Math.max(.1,(md.vol/10)*lf*(.4+inf*.6)); // print time hours
+  const lc=20+th*25;                    // minimal labor (₹20 base + ₹25/hr)
+  const lp=layer===0.1?mc*.2:layer===0.15?mc*.12:layer===0.3?-(mc*.08):0;
+  const cp=s.colorExtra||0;
+  const uc=mc+lc+supp+lp+cp;
+  const total=uc*qty;
+  return{matCost:mc,timeH:th,laborCost:lc,supp,layerPrem:lp,colorPrem:cp,unitCost:uc,total,wt:wt*qty,qty,ppg};
+}
+
+// ═══════════════════
+//  STATE
+// ═══════════════════
+let items=[],activeItemId=null,uidCounter=0;
+function defaultSettings(){
+  const first=getAvailableColors()[0];
+  return{mat:'pla',colorId:first?first.id:1,colorName:first?first.name:'White',colorExtra:first?first.extra:0,infill:20,layer:'0.2',supp:'0',qty:1};
+}
+function addItem(name,parsed,meshData){const id=++uidCounter,s=defaultSettings(),cost=computeItemCost(meshData,s);items.push({id,name,parsed,meshData,settings:s,cost});renderItemCards();updateGrandTotal();document.getElementById('itemsList').style.display='block';setTimeout(()=>setActiveItem(id),50);}
+function removeItem(id){items=items.filter(i=>i.id!==id);if(activeItemId===id){activeItemId=null;document.getElementById('vph').style.display='flex';document.getElementById('vctrls').style.display='none';if(activeMesh){scene.remove(activeMesh);activeMesh.geometry.dispose();activeMesh.material.dispose();activeMesh=null;}clearSelectedBreakdown();}if(items.length===0)document.getElementById('itemsList').style.display='none';renderItemCards();updateGrandTotal();}
+function setActiveItem(id){activeItemId=id;const item=items.find(i=>i.id===id);if(!item)return;loadMeshIntoViewer(item);updateSelectedBreakdown(item);renderItemCards();}
+
+function onSettingChange(id){
+  const item=items.find(i=>i.id===id);if(!item)return;
+  const root=document.getElementById(`ic-${id}`);
+  item.settings.mat   =root.querySelector('.s-mat').value;
+  item.settings.infill=+root.querySelector('.s-infill').value;
+  item.settings.layer =root.querySelector('.s-layer').value;
+  item.settings.supp  =root.querySelector('.s-supp').value;
+  item.settings.qty   =+root.querySelector('.s-qty').value||1;
+  root.querySelector('.s-infill-lbl').textContent=item.settings.infill+'%';
+  item.cost=computeItemCost(item.meshData,item.settings);
+  // ✅ Keep chosen swatch color, don't override with material default
+  if(activeItemId===id&&activeMesh){
+    const col=COLORS.find(c=>c.id===item.settings.colorId);
+    if(col) activeMesh.material.color.setHex(hexToInt(col.hex));
+  }
+  root.querySelector('.ic-cost').textContent='₹'+item.cost.total.toFixed(0);
+  if(activeItemId===id)updateSelectedBreakdown(item);
+  updateGrandTotal();
+}
+
+function renderItemCards(){
+  const container=document.getElementById('itemCards');container.innerHTML='';
+  items.forEach((item,idx)=>{
+    const div=document.createElement('div');div.className='item-card'+(item.id===activeItemId?' active':'');div.id=`ic-${item.id}`;
+    div.innerHTML=`
+      <div class="ic-header" onclick="setActiveItem(${item.id})">
+        <span class="ic-num">#${idx+1}</span><span class="ic-name" title="${item.name}">${item.name}</span>
+        <span class="ic-cost">₹${item.cost.total.toFixed(0)}</span>
+        <button class="ic-remove" onclick="event.stopPropagation();removeItem(${item.id})">✕</button>
+      </div>
+      <div class="ic-body">
+        <div class="ic-meta">
+          <div class="mk">Volume</div><div class="mv">${item.meshData.vol.toFixed(3)} cm³</div>
+          <div class="mk">Dimensions</div><div class="mv">${item.meshData.dims.x}×${item.meshData.dims.y}×${item.meshData.dims.z} mm</div>
+          <div class="mk">Triangles</div><div class="mv">${item.parsed.n.toLocaleString()}</div>
+        </div>
+        <div class="settings-panel">
+          <div class="srow"><span class="slabel">Material</span>
+            <select class="sselect s-mat" onchange="onSettingChange(${item.id})">
+              <option value="pla"  ${item.settings.mat==='pla' ?'selected':''}>PLA — Standard</option>
+              <option value="petg" ${item.settings.mat==='petg'?'selected':''}>PETG — Engineering</option>
+              <option value="abs"  ${item.settings.mat==='abs' ?'selected':''}>ABS — High Temp</option>
+              <option value="tpu"  ${item.settings.mat==='tpu' ?'selected':''}>TPU — Flexible</option>
+              
+            </select>
+          </div>
+          <div class="srow"><span class="slabel">Print Color</span>${buildSwatchHTML(item.id,item.settings.colorId)}</div>
+          <div class="srow">
+            <span class="slabel">Infill — <span class="s-infill-lbl">${item.settings.infill}%</span></span>
+            <div class="slider-row"><input type="range" class="s-infill" min="10" max="100" value="${item.settings.infill}" oninput="onSettingChange(${item.id})"><span class="sval s-infill-lbl">${item.settings.infill}%</span></div>
+          </div>
+          <div class="srow"><span class="slabel">Layer Height</span>
+            <select class="sselect s-layer" onchange="onSettingChange(${item.id})">
+              <option value="0.3">0.30mm — Draft</option><option value="0.2" selected>0.20mm — Standard</option>
+              <option value="0.15">0.15mm — Fine</option><option value="0.1">0.10mm — Ultra Fine</option>
+            </select>
+          </div>
+          <div class="srow"><span class="slabel">Supports</span>
+            <select class="sselect s-supp" onchange="onSettingChange(${item.id})">
+              <option value="0">None</option><option value="30">Auto (+₹30)</option><option value="60">Manual (+₹60)</option>
+            </select>
+          </div>
+          <div class="srow"><span class="slabel">Quantity</span>
+            <input type="number" class="sselect s-qty" min="1" max="9999" value="${item.settings.qty}" oninput="onSettingChange(${item.id})">
+          </div>
+        </div>
+      </div>`;
+    container.appendChild(div);
+  });
+}
+
+function updateSelectedBreakdown(item){
+  const c=item.cost;
+  document.getElementById('selCostEmpty').style.display='none';document.getElementById('selCostRows').style.display='block';
+  document.getElementById('sc-mat').textContent  ='₹'+c.matCost.toFixed(0)+` (₹${c.ppg}/g)`;
+  document.getElementById('sc-time').textContent =c.timeH<1?'< 1 hr':c.timeH.toFixed(1)+' hrs';
+  document.getElementById('sc-labor').textContent='₹'+c.laborCost.toFixed(0);
+  document.getElementById('sc-supp').textContent =c.supp>0?'₹'+c.supp:'Included';
+  document.getElementById('sc-layer').textContent=c.layerPrem!==0?(c.layerPrem>0?'+':'')+' ₹'+Math.abs(c.layerPrem).toFixed(0):'—';
+  document.getElementById('sc-color').textContent=c.colorPrem>0?`+₹${c.colorPrem} (${item.settings.colorName})`:(item.settings.colorName||'—');
+  document.getElementById('sc-qty').textContent  =`× ${c.qty} = ₹${c.total.toFixed(0)}`;
+  document.getElementById('sc-total').textContent='₹'+c.total.toFixed(0);
+}
+function clearSelectedBreakdown(){document.getElementById('selCostEmpty').style.display='block';document.getElementById('selCostRows').style.display='none';}
+
+function updateGrandTotal(){
+  const tbody=document.getElementById('grandTableBody');tbody.innerHTML='';let sub=0;
+  items.forEach((item,idx)=>{
+    sub+=item.cost.total;
+    const tr=document.createElement('tr'),ml=({pla:'PLA',petg:'PETG',abs:'ABS',tpu:'TPU'})[item.settings.mat]||item.settings.mat;
+    const col=COLORS.find(c=>c.id===item.settings.colorId);
+    const dot=col?`<span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${col.hex};margin-right:4px;vertical-align:middle"></span>`:'';
+    tr.innerHTML=`<td>${idx+1}</td><td><div class="gt-fname" title="${item.name}">${item.name}</div></td><td>${ml}</td><td>${dot}${item.settings.colorName||'—'}</td><td>${item.settings.layer}mm</td><td>${item.settings.infill}%</td><td>${item.settings.qty}</td><td>${item.cost.wt.toFixed(1)}g</td><td>₹${item.cost.total.toFixed(0)}</td>`;
+    tbody.appendChild(tr);
+  });
+  const disc=items.length>=3?sub*.05:0,total=sub-disc;
+  document.getElementById('gSubtotal').textContent ='₹'+sub.toFixed(0);
+  document.getElementById('gTotal').textContent='₹'+total.toFixed(0);
+}
+
+// ═══════════════════
+//  FILE HANDLING
+// ═══════════════════
+function handleFiles(fileList){Array.from(fileList).forEach(file=>{if(!file.name.toLowerCase().endsWith('.stl')){showToast('⚠ '+file.name+' is not an STL file');return;}const rd=new FileReader();rd.onload=e=>{const parsed=parseSTL(e.target.result),meshData=analyzeMesh(parsed.pos);addItem(file.name,parsed,meshData);showToast('✓ '+file.name+' loaded');};rd.readAsArrayBuffer(file);});}
+const uz=document.getElementById('uploadZone'),fi=document.getElementById('fileInput');
+uz.addEventListener('click',()=>fi.click());
+fi.addEventListener('change',e=>{if(e.target.files.length)handleFiles(e.target.files);fi.value='';});
+uz.addEventListener('dragover',e=>{e.preventDefault();uz.classList.add('drag-over');});
+uz.addEventListener('dragleave',()=>uz.classList.remove('drag-over'));
+uz.addEventListener('drop',e=>{e.preventDefault();uz.classList.remove('drag-over');if(e.dataTransfer.files.length)handleFiles(e.dataTransfer.files);});
+document.getElementById('clearAllBtn').addEventListener('click',()=>{items=[];activeItemId=null;if(activeMesh){scene&&scene.remove(activeMesh);activeMesh=null;}document.getElementById('itemsList').style.display='none';document.getElementById('itemCards').innerHTML='';document.getElementById('grandTableBody').innerHTML='';clearSelectedBreakdown();document.getElementById('vph').style.display='flex';showToast('All items cleared');});
+
+// ═══════════════════
+//  PDF DOWNLOAD
+// ═══════════════════
+document.getElementById('pdfBtn').addEventListener('click',()=>{
+  const{jsPDF}=window.jspdf;const doc=new jsPDF({unit:'mm',format:'a4'});const W=210,M=18;let y=22;
+  doc.setFillColor(0,229,255);doc.rect(0,0,W,14,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(0,0,0);doc.text('ERC Robotic Solutions',M,9.5);
+  doc.setFontSize(8);doc.setFont('helvetica','normal');doc.text('3D Printing · Chennai · 8438079969 / 8056160643',W-M,9.5,{align:'right'});
+  y=26;doc.setFont('helvetica','bold');doc.setFontSize(16);doc.setTextColor(0,0,0);doc.text('Print Order Quote',M,y);y+=5;
+  doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(100,100,120);doc.text(`Generated: ${new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'})}`,M,y);y+=8;
+  doc.setDrawColor(0,229,255);doc.setLineWidth(0.4);doc.line(M,y,W-M,y);y+=7;
+  items.forEach((item,idx)=>{
+    const c=item.cost,ml=({pla:'PLA',petg:'PETG',abs:'ABS',tpu:'TPU'})[item.settings.mat]||item.settings.mat;
+    doc.setFillColor(13,13,40);doc.rect(M,y-4,W-M*2,7,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(0,229,255);
+    doc.text(`#${idx+1}  ${item.name}`,M+2,y);doc.text(`Rs.${c.total.toFixed(0)}`,W-M-2,y,{align:'right'});y+=6;
+    const details=[['Material',`${ml} @ ₹${c.ppg}/g`],['Color',item.settings.colorName||'—'],['Layer',item.settings.layer+'mm'],['Infill',item.settings.infill+'%'],['Supports',item.settings.supp>0?'Yes':'None'],['Quantity',String(item.settings.qty)],['Weight',c.wt.toFixed(1)+'g'],['Print Time',c.timeH<1?'< 1 hr':c.timeH.toFixed(1)+' hrs'],['Labor','Rs.'+c.laborCost.toFixed(0)]];
+    doc.setFontSize(8);
+    details.forEach(([label,val],col)=>{const cx=M+(col%3)*58,cy=y+Math.floor(col/3)*8;doc.setFont('helvetica','normal');doc.setTextColor(120,130,160);doc.text(label,cx,cy);doc.setFont('helvetica','bold');doc.setTextColor(30,30,50);doc.text(val,cx,cy+4);});
+    y+=Math.ceil(details.length/3)*8+6;
+    doc.setDrawColor(220,225,240);doc.setLineWidth(0.2);doc.line(M,y-2,W-M,y-2);y+=4;
+    if(y>260){doc.addPage();y=20;}
+  });
+  y+=4;
+  const sub=items.reduce((s,i)=>s+i.cost.total,0),total=sub,bh=24;
+  doc.setFillColor(7,7,26);doc.rect(M,y,W-M*2,bh,'F');doc.setDrawColor(0,229,255);doc.setLineWidth(0.5);doc.rect(M,y,W-M*2,bh);
+  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(160,170,200);
+  doc.text('Subtotal',M+4,y+8);doc.setTextColor(200,210,230);doc.text('Rs.'+sub.toFixed(0),W-M-4,y+8,{align:'right'});
+  doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(0,229,255);
+  doc.text('ORDER TOTAL',M+4,y+16);doc.setFontSize(14);doc.text('Rs.'+total.toFixed(0),W-M-4,y+16,{align:'right'});
+  doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(180,140,100);
+  doc.text('* Prices exclude delivery charges. Colour must be specified 7 days in advance.',M+4,y+22);
+  doc.setFillColor(0,229,255);doc.rect(0,287,W,10,'F');doc.setFontSize(7);doc.setTextColor(0,0,0);
+  doc.text('erc3dprintingservices@gmail.com · 8438079969 / 814302725 / 8056160643 · Chennai',W/2,293,{align:'center'});
+  doc.save(`ERC-Quote-${Date.now()}.pdf`);showToast('✓ PDF downloaded!');
+});
+
+// ═══════════════════
+//  GALLERY
+// ═══════════════════
+const galItems=[{name:'Mechanical Gear Set',mat:'PETG',clr:'#00e5ff',bg:'#051525',sh:'gear'},{name:'Custom PCB Enclosure',mat:'PLA',clr:'#8b5cf6',bg:'#100a28',sh:'box'},{name:'Cosplay Armor Piece',mat:'PLA',clr:'#a78bfa',bg:'#0f0820',sh:'armor'},{name:'Drone Frame Bracket',mat:'ABS',clr:'#ff6b35',bg:'#1a0a06',sh:'drone'},{name:'Product Prototype',mat:'PLA',clr:'#22d3ee',bg:'#041520',sh:'proto'},{name:'Flexible Phone Stand',mat:'TPU',clr:'#00e5ff',bg:'#05152a',sh:'stand'},{name:'Industrial Manifold',mat:'PETG',clr:'#00ff88',bg:'#041508',sh:'mani'},{name:'Figurine — High Detail',mat:'PLA',clr:'#f59e0b',bg:'#1a1205',sh:'fig'}];
+function gSVG(sh,c){switch(sh){case'gear':return`<circle cx="50" cy="50" r="18" fill="none" stroke="${c}" stroke-width="3.5"/><circle cx="50" cy="50" r="7" fill="${c}" opacity=".5"/>${[0,30,60,90,120,150,180,210,240,270,300,330].map(a=>{const r=a*Math.PI/180,x1=50+20*Math.cos(r),y1=50+20*Math.sin(r),x2=50+30*Math.cos(r),y2=50+30*Math.sin(r);return`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${c}" stroke-width="5.5" stroke-linecap="round"/>`;}).join('')}`;case'box':return`<rect x="18" y="33" width="52" height="42" fill="none" stroke="${c}" stroke-width="3" rx="2"/><polygon points="18,33 36,16 88,16 70,33" fill="none" stroke="${c}" stroke-width="3"/><line x1="70" y1="33" x2="88" y2="16" stroke="${c}" stroke-width="3"/><line x1="70" y1="33" x2="70" y2="75" stroke="${c}" stroke-width="3"/>`;case'armor':return`<polygon points="50,5 88,28 88,72 50,95 12,72 12,28" fill="none" stroke="${c}" stroke-width="3"/><polygon points="50,20 72,35 72,65 50,80 28,65 28,35" fill="${c}" opacity=".1"/><line x1="50" y1="5" x2="50" y2="95" stroke="${c}" stroke-width="1" opacity=".35"/><line x1="12" y1="50" x2="88" y2="50" stroke="${c}" stroke-width="1" opacity=".35"/><circle cx="50" cy="50" r="8" fill="none" stroke="${c}" stroke-width="2"/>`;case'drone':return`<rect x="35" y="35" width="30" height="30" rx="4" fill="none" stroke="${c}" stroke-width="3"/>${[[35,35,'15,15'],[65,35,'85,15'],[35,65,'15,85'],[65,65,'85,85']].map(([x,y,p])=>`<line x1="${x}" y1="${y}" x2="${p.split(',')[0]}" y2="${p.split(',')[1]}" stroke="${c}" stroke-width="2"/>`).join('')}${[[8,8],[80,8],[8,80],[80,80]].map(([x,y])=>`<circle cx="${x+7}" cy="${y+7}" r="9" fill="none" stroke="${c}" stroke-width="2.5"/>`).join('')}`;case'proto':return`<rect x="22" y="25" width="56" height="50" rx="5" fill="none" stroke="${c}" stroke-width="3"/><rect x="30" y="33" width="40" height="28" rx="3" fill="${c}" opacity=".09"/><circle cx="50" cy="83" r="4.5" fill="${c}" opacity=".6"/>${[37,50,63].map(x=>`<line x1="${x}" y1="40" x2="${x}" y2="56" stroke="${c}" stroke-width="2" opacity=".45"/>`).join('')}`;case'stand':return`<rect x="30" y="60" width="40" height="10" rx="3" fill="none" stroke="${c}" stroke-width="3"/><path d="M50,60 L35,30 L65,30" fill="none" stroke="${c}" stroke-width="3" stroke-linejoin="round"/><rect x="28" y="22" width="44" height="12" rx="4" fill="none" stroke="${c}" stroke-width="3"/>`;case'mani':return`<rect x="20" y="30" width="60" height="40" rx="2" fill="none" stroke="${c}" stroke-width="3"/>${[30,42,54,66].map(x=>`<circle cx="${x}" cy="30" r="4" fill="${c}" opacity=".5"/><circle cx="${x}" cy="70" r="4" fill="${c}" opacity=".5"/>`).join('')}`;case'fig':return`<ellipse cx="50" cy="72" rx="16" ry="6" fill="none" stroke="${c}" stroke-width="2.5" opacity=".5"/><ellipse cx="50" cy="55" rx="12" ry="16" fill="none" stroke="${c}" stroke-width="2.5"/><circle cx="50" cy="28" r="13" fill="none" stroke="${c}" stroke-width="2.5"/><line x1="38" y1="55" x2="30" y2="72" stroke="${c}" stroke-width="2.5" stroke-linecap="round"/><line x1="62" y1="55" x2="70" y2="72" stroke="${c}" stroke-width="2.5" stroke-linecap="round"/>`;default:return`<circle cx="50" cy="50" r="35" fill="none" stroke="${c}" stroke-width="3"/>`;}}
+const gg=document.getElementById('galGrid');
+galItems.forEach((item,i)=>{const el=document.createElement('div');el.className='gal-item';el.style.transitionDelay=`${i*.06}s`;el.innerHTML=`<div class="gal-vis" style="background:${item.bg}"><svg viewBox="0 0 100 100" width="62%" height="62%">${gSVG(item.sh,item.clr)}</svg></div><div class="gal-ov"><h4>${item.name}</h4><p>${item.mat} · ERC Robotic Solutions</p></div>`;gg.appendChild(el);});
+
+// SCROLL ANIMATIONS
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});},{threshold:.12});
+document.querySelectorAll('.svc-card,.gal-item,.price-card').forEach(el=>obs.observe(el));
+
+// CONTACT FORM
+document.getElementById('contactForm').addEventListener('submit',e=>{e.preventDefault();const btn=e.target.querySelector('button');btn.textContent='✓ Message Sent!';btn.style.background='var(--green)';showToast('✓ Message sent! We\'ll respond within 24 hours.');setTimeout(()=>{btn.textContent='Send Message →';btn.style.background='';e.target.reset();},4000);});
+
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
+</script>
+</body>
+</html>
