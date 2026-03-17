@@ -264,6 +264,7 @@ footer{background:rgba(8,18,35,0.9);border-top:1px solid var(--border);padding:1
 @media(max-width:500px){.hero-stats{flex-wrap:wrap}.grand-actions{flex-direction:column}}
 </style>
 </head>
+
 <body>
 
 <nav>
@@ -494,7 +495,22 @@ footer{background:rgba(8,18,35,0.9);border-top:1px solid var(--border);padding:1
       <div class="ff"><label>Email</label><input type="email" name="email" placeholder="you@email.com" required style="background:rgba(6,16,30,.85);border:1px solid var(--border);color:var(--text);padding:.65rem .9rem;border-radius:2px;font-family:var(--fb);font-size:.95rem;outline:none;width:100%"></div>
       <div class="ff"><label>Phone</label><input type="tel" name="phone" placeholder="+91 XXXXX XXXXX" style="background:rgba(6,16,30,.85);border:1px solid var(--border);color:var(--text);padding:.65rem .9rem;border-radius:2px;font-family:var(--fb);font-size:.95rem;outline:none;width:100%"></div>
       <div class="ff"><label>STL File Link</label><input type="url" name="stl_file_link" placeholder="Paste Google Drive / WeTransfer link to your STL file" style="background:rgba(6,16,30,.85);border:1px solid var(--border);color:var(--text);padding:.65rem .9rem;border-radius:2px;font-family:var(--fb);font-size:.95rem;outline:none;width:100%"></div>
-      <button type="submit" class="btn-p" style="margin-top:.4rem">✓ Confirm Order & Download PDF →</button>
+      <div style="background:rgba(0,229,255,.05);border:1px solid var(--border);border-radius:6px;padding:1.2rem;text-align:center;margin-top:.5rem">
+  <p style="font-family:var(--fm);font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:.8rem">SCAN TO PAY · UPI</p>
+  <img src="upi-qr.png" alt="UPI QR Code" style="width:160px;height:160px;border-radius:8px;border:3px solid rgba(0,229,255,.3)">
+  <p style="font-family:var(--fm);font-size:.65rem;color:var(--muted);margin-top:.6rem">Pay after confirming your order on WhatsApp</p>
+</div>
+
+<a href="https://wa.me/918056160643?text=Hi%20ERC%2C%20I%20just%20placed%20an%20order%20on%20your%20website%20and%20made%20the%20payment.%20Please%20confirm%20my%20order." 
+   target="_blank"
+   class="btn-p" 
+   style="display:flex;align-items:center;justify-content:center;gap:.6rem;background:#25D366;margin-top:.8rem;text-decoration:none">
+  💬 Confirm on WhatsApp
+</a>
+
+<button type="button" onclick="document.getElementById('pdfBtn').click();showToast('✓ PDF downloaded!')" class="btn-o" style="width:100%;margin-top:.6rem">
+  ⬇ Download Quote PDF
+</button>
     </form>
   </div>
 </div>
@@ -958,5 +974,9 @@ document.getElementById('orderForm').addEventListener('submit',e=>{
 
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
 </script>
+<a href="https://wa.me/918056160643" target="_blank"
+   style="position:fixed;bottom:1.8rem;right:1.8rem;z-index:500;background:#25D366;color:#fff;width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.6rem;box-shadow:0 4px 20px rgba(37,211,102,.5);text-decoration:none;transition:transform .2s"
+   onmouseover="this.style.transform='scale(1.12)'"
+   onmouseout="this.style.transform='scale(1)'">💬</a>
 </body>
 </html>
