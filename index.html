@@ -865,8 +865,6 @@ galItems.forEach((item,i)=>{const el=document.createElement('div');el.className=
 const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});},{threshold:.12});
 document.querySelectorAll('.svc-card,.gal-item,.price-card').forEach(el=>obs.observe(el));
 
-// CONTACT FORM
-document.getElementById('contactForm').addEventListener('submit',e=>{e.preventDefault();const btn=e.target.querySelector('button');btn.textContent='✓ Message Sent!';btn.style.background='var(--green)';showToast('✓ Message sent! We\'ll respond within 24 hours.');setTimeout(()=>{btn.textContent='Send Message →';btn.style.background='';e.target.reset();},4000);});
 
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
 </script>
