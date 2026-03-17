@@ -179,16 +179,25 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:13px;height:13px;b
 
 /* GALLERY */
 #gallery{background:rgba(8,18,35,0.6);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
-.gal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.85rem}
-.gal-item{aspect-ratio:1;border:1px solid var(--border);border-radius:3px;overflow:hidden;position:relative;cursor:pointer;opacity:0;transform:scale(.94)}
-.gal-item.visible{opacity:1;transform:scale(1);transition:opacity .5s,transform .5s,border-color .3s}
-.gal-item:hover{border-color:rgba(0,229,255,.4)}
+.gal-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.gal-item{border:1px solid var(--border);border-radius:8px;overflow:hidden;position:relative;cursor:pointer;opacity:0;transform:translateY(12px);background:rgba(11,26,46,0.82)}
+.gal-item.visible{opacity:1;transform:translateY(0);transition:opacity .5s,transform .5s}
+.gal-item:hover{border-color:rgba(0,229,255,.5);box-shadow:var(--glow)}
 .gal-item:hover .gal-ov{opacity:1}
-.gal-item:hover .gal-vis{transform:scale(1.06)}
-.gal-vis{width:100%;height:100%;transition:transform .4s;display:flex;align-items:center;justify-content:center}
-.gal-ov{position:absolute;inset:0;background:rgba(0,0,20,.75);opacity:0;transition:opacity .3s;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.4rem}
-.gal-ov h4{font-family:var(--fh);font-size:.78rem;color:var(--accent);letter-spacing:1px;text-align:center;padding:0 .5rem}
-.gal-ov p{font-family:var(--fm);font-size:.68rem;color:#9ab8cc}
+.gal-item:hover .gal-vis img{transform:scale(1.06)}
+.gal-item.featured{grid-column:span 2}
+.gal-vis{width:100%;height:220px;overflow:hidden}
+.gal-item.featured .gal-vis{height:260px}
+.gal-vis img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s}
+.gal-label{padding:.7rem 1rem}
+.gal-label h4{font-family:var(--fh);font-size:.75rem;color:#fff;letter-spacing:1px;margin-bottom:.2rem}
+.gal-label p{font-family:var(--fm);font-size:.65rem;color:var(--muted)}
+.gal-badge{position:absolute;top:.7rem;right:.7rem;font-family:var(--fm);font-size:.6rem;padding:.25rem .6rem;border-radius:2px;letter-spacing:1px}
+.gal-badge.featured{background:rgba(0,229,255,.15);color:var(--accent);border:1px solid var(--border)}
+.gal-badge.new{background:rgba(0,255,136,.15);color:var(--green);border:1px solid rgba(0,255,136,.3)}
+.gal-ov{position:absolute;inset:0;background:rgba(0,0,20,.55);opacity:0;transition:opacity .3s}
+@media(max-width:900px){.gal-grid{grid-template-columns:repeat(2,1fr)}.gal-item.featured{grid-column:span 2}}
+@media(max-width:500px){.gal-grid{grid-template-columns:1fr}.gal-item.featured{grid-column:span 1}}
 
 /* CONTACT */
 #contact{background:transparent}
@@ -881,30 +890,28 @@ document.getElementById('pdfBtn').addEventListener('click',()=>{
 //  GALLERY
 // ═══════════════════
 const galItems=[
-  {name:'Mechanical Gear Set',   mat:'PETG', img:'gear.png'},
-  {name:'Custom PCB Enclosure',  mat:'PLA',  img:'enclosure.png'},
-  {name:'Cosplay Armor Piece',   mat:'PLA',  img:'armor.png'},
-  {name:'Drone Frame Bracket',   mat:'ABS',  img:'drone.png'},
-  {name:'Product Prototype',     mat:'PLA',  img:'prototype.jpeg'},
-  {name:'Flexible Phone Stand',  mat:'TPU',  img:'stand.png'},
-  {name:'Industrial Manifold',   mat:'PETG', img:'manifold.png'},
-  {name:'Figurine — High Detail',mat:'PLA',  img:'figurine.png'},
+  {name:'Mechanical Gear Set',   mat:'PETG', img:'images/gear.png',     badge:'featured', cls:'featured'},
+  {name:'Custom PCB Enclosure',  mat:'PLA',  img:'images/enclosure.png'},
+  {name:'Cosplay Armor Piece',   mat:'PLA',  img:'images/armor.png'},
+  {name:'Drone Frame Bracket',   mat:'ABS',  img:'images/drone.png',    badge:'featured', cls:'featured'},
+  {name:'Product Prototype',     mat:'PLA',  img:'images/prototype.jpeg'},
+  {name:'Flexible Phone Stand',  mat:'TPU',  img:'images/stand.png'},
+  {name:'Industrial Manifold',   mat:'PETG', img:'images/manifold.png', badge:'new'},
+  {name:'Figurine — High Detail',mat:'PLA',  img:'images/figurine.png'},
 ];
-function gSVG(sh,c){switch(sh){case'gear':return`<circle cx="50" cy="50" r="18" fill="none" stroke="${c}" stroke-width="3.5"/><circle cx="50" cy="50" r="7" fill="${c}" opacity=".5"/>${[0,30,60,90,120,150,180,210,240,270,300,330].map(a=>{const r=a*Math.PI/180,x1=50+20*Math.cos(r),y1=50+20*Math.sin(r),x2=50+30*Math.cos(r),y2=50+30*Math.sin(r);return`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${c}" stroke-width="5.5" stroke-linecap="round"/>`;}).join('')}`;case'box':return`<rect x="18" y="33" width="52" height="42" fill="none" stroke="${c}" stroke-width="3" rx="2"/><polygon points="18,33 36,16 88,16 70,33" fill="none" stroke="${c}" stroke-width="3"/><line x1="70" y1="33" x2="88" y2="16" stroke="${c}" stroke-width="3"/><line x1="70" y1="33" x2="70" y2="75" stroke="${c}" stroke-width="3"/>`;case'armor':return`<polygon points="50,5 88,28 88,72 50,95 12,72 12,28" fill="none" stroke="${c}" stroke-width="3"/><polygon points="50,20 72,35 72,65 50,80 28,65 28,35" fill="${c}" opacity=".1"/><line x1="50" y1="5" x2="50" y2="95" stroke="${c}" stroke-width="1" opacity=".35"/><line x1="12" y1="50" x2="88" y2="50" stroke="${c}" stroke-width="1" opacity=".35"/><circle cx="50" cy="50" r="8" fill="none" stroke="${c}" stroke-width="2"/>`;case'drone':return`<rect x="35" y="35" width="30" height="30" rx="4" fill="none" stroke="${c}" stroke-width="3"/>${[[35,35,'15,15'],[65,35,'85,15'],[35,65,'15,85'],[65,65,'85,85']].map(([x,y,p])=>`<line x1="${x}" y1="${y}" x2="${p.split(',')[0]}" y2="${p.split(',')[1]}" stroke="${c}" stroke-width="2"/>`).join('')}${[[8,8],[80,8],[8,80],[80,80]].map(([x,y])=>`<circle cx="${x+7}" cy="${y+7}" r="9" fill="none" stroke="${c}" stroke-width="2.5"/>`).join('')}`;case'proto':return`<rect x="22" y="25" width="56" height="50" rx="5" fill="none" stroke="${c}" stroke-width="3"/><rect x="30" y="33" width="40" height="28" rx="3" fill="${c}" opacity=".09"/><circle cx="50" cy="83" r="4.5" fill="${c}" opacity=".6"/>${[37,50,63].map(x=>`<line x1="${x}" y1="40" x2="${x}" y2="56" stroke="${c}" stroke-width="2" opacity=".45"/>`).join('')}`;case'stand':return`<rect x="30" y="60" width="40" height="10" rx="3" fill="none" stroke="${c}" stroke-width="3"/><path d="M50,60 L35,30 L65,30" fill="none" stroke="${c}" stroke-width="3" stroke-linejoin="round"/><rect x="28" y="22" width="44" height="12" rx="4" fill="none" stroke="${c}" stroke-width="3"/>`;case'mani':return`<rect x="20" y="30" width="60" height="40" rx="2" fill="none" stroke="${c}" stroke-width="3"/>${[30,42,54,66].map(x=>`<circle cx="${x}" cy="30" r="4" fill="${c}" opacity=".5"/><circle cx="${x}" cy="70" r="4" fill="${c}" opacity=".5"/>`).join('')}`;case'fig':return`<ellipse cx="50" cy="72" rx="16" ry="6" fill="none" stroke="${c}" stroke-width="2.5" opacity=".5"/><ellipse cx="50" cy="55" rx="12" ry="16" fill="none" stroke="${c}" stroke-width="2.5"/><circle cx="50" cy="28" r="13" fill="none" stroke="${c}" stroke-width="2.5"/><line x1="38" y1="55" x2="30" y2="72" stroke="${c}" stroke-width="2.5" stroke-linecap="round"/><line x1="62" y1="55" x2="70" y2="72" stroke="${c}" stroke-width="2.5" stroke-linecap="round"/>`;default:return`<circle cx="50" cy="50" r="35" fill="none" stroke="${c}" stroke-width="3"/>`;}}
 const gg=document.getElementById('galGrid');
 galItems.forEach((item,i)=>{
   const el=document.createElement('div');
-  el.className='gal-item';
+  el.className='gal-item'+(item.cls?' '+item.cls:'');
   el.style.transitionDelay=`${i*.06}s`;
   el.innerHTML=`
-    <div class="gal-vis">
-      <img src="images/${item.img}" alt="${item.name}"
-           style="width:100%;height:100%;object-fit:cover;display:block">
-    </div>
-    <div class="gal-ov">
+    ${item.badge?`<span class="gal-badge ${item.badge}">${item.badge.toUpperCase()}</span>`:''}
+    <div class="gal-vis"><img src="${item.img}" alt="${item.name}"></div>
+    <div class="gal-label">
       <h4>${item.name}</h4>
       <p>${item.mat} · ERC Robotic Solutions</p>
-    </div>`;
+    </div>
+    <div class="gal-ov"></div>`;
   gg.appendChild(el);
 });
 
