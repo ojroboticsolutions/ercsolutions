@@ -880,10 +880,33 @@ document.getElementById('pdfBtn').addEventListener('click',()=>{
 // ═══════════════════
 //  GALLERY
 // ═══════════════════
-const galItems=[{name:'Mechanical Gear Set',mat:'PETG',clr:'#00e5ff',bg:'#051525',sh:'gear'},{name:'Custom PCB Enclosure',mat:'PLA',clr:'#8b5cf6',bg:'#100a28',sh:'box'},{name:'Cosplay Armor Piece',mat:'PLA',clr:'#a78bfa',bg:'#0f0820',sh:'armor'},{name:'Drone Frame Bracket',mat:'ABS',clr:'#ff6b35',bg:'#1a0a06',sh:'drone'},{name:'Product Prototype',mat:'PLA',clr:'#22d3ee',bg:'#041520',sh:'proto'},{name:'Flexible Phone Stand',mat:'TPU',clr:'#00e5ff',bg:'#05152a',sh:'stand'},{name:'Industrial Manifold',mat:'PETG',clr:'#00ff88',bg:'#041508',sh:'mani'},{name:'Figurine — High Detail',mat:'PLA',clr:'#f59e0b',bg:'#1a1205',sh:'fig'}];
+const galItems=[
+  {name:'Mechanical Gear Set',   mat:'PETG', img:'gear.png'},
+  {name:'Custom PCB Enclosure',  mat:'PLA',  img:'enclosure.png'},
+  {name:'Cosplay Armor Piece',   mat:'PLA',  img:'armor.png'},
+  {name:'Drone Frame Bracket',   mat:'ABS',  img:'drone.png'},
+  {name:'Product Prototype',     mat:'PLA',  img:'prototype.jpeg'},
+  {name:'Flexible Phone Stand',  mat:'TPU',  img:'stand.png'},
+  {name:'Industrial Manifold',   mat:'PETG', img:'manifold.png'},
+  {name:'Figurine — High Detail',mat:'PLA',  img:'figurine.png'},
+];
 function gSVG(sh,c){switch(sh){case'gear':return`<circle cx="50" cy="50" r="18" fill="none" stroke="${c}" stroke-width="3.5"/><circle cx="50" cy="50" r="7" fill="${c}" opacity=".5"/>${[0,30,60,90,120,150,180,210,240,270,300,330].map(a=>{const r=a*Math.PI/180,x1=50+20*Math.cos(r),y1=50+20*Math.sin(r),x2=50+30*Math.cos(r),y2=50+30*Math.sin(r);return`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${c}" stroke-width="5.5" stroke-linecap="round"/>`;}).join('')}`;case'box':return`<rect x="18" y="33" width="52" height="42" fill="none" stroke="${c}" stroke-width="3" rx="2"/><polygon points="18,33 36,16 88,16 70,33" fill="none" stroke="${c}" stroke-width="3"/><line x1="70" y1="33" x2="88" y2="16" stroke="${c}" stroke-width="3"/><line x1="70" y1="33" x2="70" y2="75" stroke="${c}" stroke-width="3"/>`;case'armor':return`<polygon points="50,5 88,28 88,72 50,95 12,72 12,28" fill="none" stroke="${c}" stroke-width="3"/><polygon points="50,20 72,35 72,65 50,80 28,65 28,35" fill="${c}" opacity=".1"/><line x1="50" y1="5" x2="50" y2="95" stroke="${c}" stroke-width="1" opacity=".35"/><line x1="12" y1="50" x2="88" y2="50" stroke="${c}" stroke-width="1" opacity=".35"/><circle cx="50" cy="50" r="8" fill="none" stroke="${c}" stroke-width="2"/>`;case'drone':return`<rect x="35" y="35" width="30" height="30" rx="4" fill="none" stroke="${c}" stroke-width="3"/>${[[35,35,'15,15'],[65,35,'85,15'],[35,65,'15,85'],[65,65,'85,85']].map(([x,y,p])=>`<line x1="${x}" y1="${y}" x2="${p.split(',')[0]}" y2="${p.split(',')[1]}" stroke="${c}" stroke-width="2"/>`).join('')}${[[8,8],[80,8],[8,80],[80,80]].map(([x,y])=>`<circle cx="${x+7}" cy="${y+7}" r="9" fill="none" stroke="${c}" stroke-width="2.5"/>`).join('')}`;case'proto':return`<rect x="22" y="25" width="56" height="50" rx="5" fill="none" stroke="${c}" stroke-width="3"/><rect x="30" y="33" width="40" height="28" rx="3" fill="${c}" opacity=".09"/><circle cx="50" cy="83" r="4.5" fill="${c}" opacity=".6"/>${[37,50,63].map(x=>`<line x1="${x}" y1="40" x2="${x}" y2="56" stroke="${c}" stroke-width="2" opacity=".45"/>`).join('')}`;case'stand':return`<rect x="30" y="60" width="40" height="10" rx="3" fill="none" stroke="${c}" stroke-width="3"/><path d="M50,60 L35,30 L65,30" fill="none" stroke="${c}" stroke-width="3" stroke-linejoin="round"/><rect x="28" y="22" width="44" height="12" rx="4" fill="none" stroke="${c}" stroke-width="3"/>`;case'mani':return`<rect x="20" y="30" width="60" height="40" rx="2" fill="none" stroke="${c}" stroke-width="3"/>${[30,42,54,66].map(x=>`<circle cx="${x}" cy="30" r="4" fill="${c}" opacity=".5"/><circle cx="${x}" cy="70" r="4" fill="${c}" opacity=".5"/>`).join('')}`;case'fig':return`<ellipse cx="50" cy="72" rx="16" ry="6" fill="none" stroke="${c}" stroke-width="2.5" opacity=".5"/><ellipse cx="50" cy="55" rx="12" ry="16" fill="none" stroke="${c}" stroke-width="2.5"/><circle cx="50" cy="28" r="13" fill="none" stroke="${c}" stroke-width="2.5"/><line x1="38" y1="55" x2="30" y2="72" stroke="${c}" stroke-width="2.5" stroke-linecap="round"/><line x1="62" y1="55" x2="70" y2="72" stroke="${c}" stroke-width="2.5" stroke-linecap="round"/>`;default:return`<circle cx="50" cy="50" r="35" fill="none" stroke="${c}" stroke-width="3"/>`;}}
 const gg=document.getElementById('galGrid');
-galItems.forEach((item,i)=>{const el=document.createElement('div');el.className='gal-item';el.style.transitionDelay=`${i*.06}s`;el.innerHTML=`<div class="gal-vis" style="background:${item.bg}"><svg viewBox="0 0 100 100" width="62%" height="62%">${gSVG(item.sh,item.clr)}</svg></div><div class="gal-ov"><h4>${item.name}</h4><p>${item.mat} · ERC Robotic Solutions</p></div>`;gg.appendChild(el);});
+galItems.forEach((item,i)=>{
+  const el=document.createElement('div');
+  el.className='gal-item';
+  el.style.transitionDelay=`${i*.06}s`;
+  el.innerHTML=`
+    <div class="gal-vis">
+      <img src="images/${item.img}" alt="${item.name}"
+           style="width:100%;height:100%;object-fit:cover;display:block">
+    </div>
+    <div class="gal-ov">
+      <h4>${item.name}</h4>
+      <p>${item.mat} · ERC Robotic Solutions</p>
+    </div>`;
+  gg.appendChild(el);
+});
 
 // SCROLL ANIMATIONS
 const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});},{threshold:.12});
