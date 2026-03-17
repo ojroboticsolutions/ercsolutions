@@ -711,8 +711,10 @@ const DENS={pla:1.24,petg:1.27,abs:1.04,tpu:1.21};
 function computeItemCost(md,s){
   const inf=s.infill/100,layer=+s.layer,supp=+s.supp,qty=Math.max(1,+s.qty);
   const dens=DENS[s.mat]||1.24;
-  const ev=md.vol*(0.22+0.78*inf);     // effective volume cm³
-  const wt=ev*dens;                     // weight in grams (single unit)
+  const suppMult=supp===60?0.20:supp===30?0.15:0;
+  const suppVol=md.vol*suppMult;
+  const ev=(md.vol+suppVol)*(0.22+0.78*inf);  // effective volume cm³
+  const wt=ev*dens;                            // weight in grams (single unit)
   const ppg=getPPG(s.mat,wt*qty);       // tiered rate based on total order weight
   const mc=wt*ppg;                      // material cost per unit
   const lf=layer===0.1?2.4:layer===0.15?1.45:layer===0.3?0.72:1;
