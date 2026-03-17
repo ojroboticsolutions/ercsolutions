@@ -363,7 +363,7 @@ footer{background:rgba(8,18,35,0.9);border-top:1px solid var(--border);padding:1
         </div>
       </div>
       <div class="grand-actions">
-        <a href="#contact" class="btn-p">Place Order / Enquire →</a>
+        <button class="btn-p" id="placeOrderBtn">Place Order / Enquire →</button>
         <button class="btn-o" id="pdfBtn">⬇ Download Quote PDF</button>
       </div>
       <p class="cost-note" style="margin-top:1rem">* Prices exclude delivery charges. Final price confirmed after review.</p>
@@ -472,6 +472,23 @@ footer{background:rgba(8,18,35,0.9);border-top:1px solid var(--border);padding:1
   <ul class="ft-links"><li><a href="#services">Services</a></li><li><a href="#quote">Quote</a></li><li><a href="#gallery">Gallery</a></li><li><a href="#contact">Contact</a></li></ul>
   <p class="ft-copy">© 2025 ERC Robotic Solutions · 3D Printing · Chennai, India</p>
 </footer>
+
+<div class="admin-overlay" id="orderOverlay">
+  <div class="admin-panel" style="max-width:520px">
+    <button class="admin-close" id="orderClose">✕</button>
+    <h2 style="margin-bottom:.8rem">// Place Your Order</h2>
+    <p class="admin-sub">Fill in your details and we'll confirm your order within 24 hours. Your quote PDF will download automatically.</p>
+    <form id="orderForm" action="https://formspree.io/f/xbdzprwz" method="POST" style="display:flex;flex-direction:column;gap:1rem">
+      <input type="hidden" name="_subject" value="New 3D Print Order from Website">
+      <input type="hidden" id="orderQuoteSummary" name="Quote Summary">
+      <div class="ff"><label>Your Name</label><input type="text" name="name" placeholder="John Doe" required style="background:rgba(6,16,30,.85);border:1px solid var(--border);color:var(--text);padding:.65rem .9rem;border-radius:2px;font-family:var(--fb);font-size:.95rem;outline:none;width:100%"></div>
+      <div class="ff"><label>Email</label><input type="email" name="email" placeholder="you@email.com" required style="background:rgba(6,16,30,.85);border:1px solid var(--border);color:var(--text);padding:.65rem .9rem;border-radius:2px;font-family:var(--fb);font-size:.95rem;outline:none;width:100%"></div>
+      <div class="ff"><label>Phone</label><input type="tel" name="phone" placeholder="+91 XXXXX XXXXX" style="background:rgba(6,16,30,.85);border:1px solid var(--border);color:var(--text);padding:.65rem .9rem;border-radius:2px;font-family:var(--fb);font-size:.95rem;outline:none;width:100%"></div>
+      <div class="ff"><label>Additional Notes</label><textarea name="notes" placeholder="Any special requirements, delivery deadline, etc..." style="background:rgba(6,16,30,.85);border:1px solid var(--border);color:var(--text);padding:.65rem .9rem;border-radius:2px;font-family:var(--fb);font-size:.95rem;outline:none;width:100%;min-height:80px;resize:vertical"></textarea></div>
+      <button type="submit" class="btn-p" style="margin-top:.4rem">✓ Confirm Order & Download PDF →</button>
+    </form>
+  </div>
+</div>
 
 
 
@@ -871,6 +888,40 @@ galItems.forEach((item,i)=>{const el=document.createElement('div');el.className=
 // SCROLL ANIMATIONS
 const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});},{threshold:.12});
 document.querySelectorAll('.svc-card,.gal-item,.price-card').forEach(el=>obs.observe(el));
+
+// ORDER MODAL
+document.getElementById('placeOrderBtn').addEventListener('click',()=>{
+  if(items.length===0){showToast('⚠ Add at least one file first');return;}
+  // Build quote summary text for email
+  let summary='ORDER SUMMARY\n'+'─'.repeat(40)+'\n';
+  items.forEach((item,idx)=>{
+    const ml=({pla:'PLA',petg:'PETG',abs:'ABS',tpu:'TPU'})[item.settings.mat]||item.settings.mat;
+    summary+=`\n#${idx+1} ${item.name}\n`;
+    summary+=`  Material: ${ml} @ ₹${item.cost.ppg}/g\n`;
+    summary+=`  Color: ${item.settings.colorName||'—'}\n`;
+    summary+=`  Layer: ${item.settings.layer}mm | Infill: ${item.settings.infill}%\n`;
+    summary+=`  Supports: ${item.settings.supp>0?'Yes':'None'} | Qty: ${item.settings.qty}\n`;
+    summary+=`  Weight: ${item.cost.wt.toFixed(1)}g | Total: ₹${item.cost.total.toFixed(0)}\n`;
+  });
+  const sub=items.reduce((s,i)=>s+i.cost.total,0);
+  summary+='\n'+'─'.repeat(40)+'\n';
+  summary+=`ORDER TOTAL: ₹${sub.toFixed(0)}\n`;
+  summary+='(Prices exclude delivery charges)\n';
+  document.getElementById('orderQuoteSummary').value=summary;
+  document.getElementById('orderOverlay').classList.add('open');
+});
+document.getElementById('orderClose').addEventListener('click',()=>{
+  document.getElementById('orderOverlay').classList.remove('open');
+});
+document.getElementById('orderOverlay').addEventListener('click',e=>{
+  if(e.target===document.getElementById('orderOverlay'))
+    document.getElementById('orderOverlay').classList.remove('open');
+});
+document.getElementById('orderForm').addEventListener('submit',e=>{
+  // Auto-download PDF when order is placed
+  document.getElementById('pdfBtn').click();
+  // Let Formspree handle the actual form submission
+});
 
 
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
