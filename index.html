@@ -473,7 +473,7 @@ footer{background:rgba(8,18,35,0.9);border-top:1px solid var(--border);padding:1
   <p class="ft-copy">© 2025 ERC Robotic Solutions · 3D Printing · Chennai, India</p>
 </footer>
 
-<button class="admin-toggle" id="adminToggle">🎨 Manage Colors</button>
+
 
 <div class="admin-overlay" id="adminOverlay">
   <div class="admin-panel">
@@ -542,7 +542,14 @@ function renderAdminList(){
     el.appendChild(row);
   });
 }
-document.getElementById('adminToggle').addEventListener('click',()=>{renderAdminList();document.getElementById('adminOverlay').classList.add('open');});
+document.addEventListener('keydown',e=>{
+  if(e.ctrlKey&&e.shiftKey&&e.key==='C'){
+    const pwd=prompt('Password:');
+    if(pwd!=='erc2024') return;
+    renderAdminList();
+    document.getElementById('adminOverlay').classList.add('open');
+  }
+});
 document.getElementById('adminClose').addEventListener('click',()=>{saveColors();document.getElementById('adminOverlay').classList.remove('open');});
 document.getElementById('saveColorsBtn').addEventListener('click',()=>{saveColors();document.getElementById('adminOverlay').classList.remove('open');showToast('✓ Colors saved!');});
 document.getElementById('adminOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('adminOverlay')){saveColors();document.getElementById('adminOverlay').classList.remove('open');}});
